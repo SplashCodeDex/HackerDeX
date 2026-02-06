@@ -1,5 +1,8 @@
 boxes
 flask
+flask-socketio
+eventlet
+google-genai
 lolcat
 requests
 rich

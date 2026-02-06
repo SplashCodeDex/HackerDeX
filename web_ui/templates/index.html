@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerDeX Security Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --sidebar: #161b22;
+            --card: #21262d;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88,166,255,0.3);
+            --text: #c9d1d9;
+            --border: #30363d;
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+        /* SVG Icons */
+        .icon { width: 16px; height: 16px; fill: currentColor; vertical-align: middle; }
+        .icon-lg { width: 20px; height: 20px; }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+        .brand { padding: 20px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.1rem; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        .category-list { list-style: none; padding: 0; margin: 0; }
+        .category-item { padding: 12px 20px; cursor: pointer; border-left: 3px solid transparent; transition: 0.2s; font-size: 0.9rem; }
+        .category-item:hover, .category-item.active { background: var(--card); border-left-color: var(--accent); color: white; }
+        .tool-count { float: right; background: var(--border); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+
+        /* Main Content */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { padding: 25px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .header-left h1 { margin: 0 0 5px 0; font-size: 1.5rem; }
+        .header-left p { margin: 0; color: #8b949e; font-size: 0.9rem; }
+        .header-right { display: flex; gap: 10px; }
+        .header-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .header-btn:hover { border-color: var(--accent); color: white; }
+        .header-btn.active { background: var(--accent); color: black; border-color: var(--accent); }
+
+        .tools-panel { flex: 1; padding: 20px 30px; overflow-y: auto; }
+        .tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+
+        /* Tool Card */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; transition: 0.2s; cursor: pointer; }
+        .card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-glow); }
+        .card h3 { margin: 0 0 8px 0; font-size: 0.95rem; color: white; }
+        .card p { font-size: 0.8rem; color: #8b949e; margin: 0; line-clamp: 2; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Console Modal */
+        .console-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); z-index: 1000; }
+        .console-modal { background: #0a0a0a; width: 80%; max-width: 900px; height: 70%; max-height: 600px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
+        .console-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border-bottom: 1px solid var(--border); }
+        .console-title { display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 600; }
+        .console-dots { display: flex; gap: 8px; }
+        .console-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .console-dot.red { background: #ff5f56; cursor: pointer; }
+        .console-dot.red:hover { opacity: 0.8; }
+        .console-dot.yellow { background: #ffbd2e; }
+        .console-dot.green { background: #27c93f; }
+        .console-status { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #8b949e; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+        .status-dot.ready { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.running { background: var(--warning); animation: pulse 1s infinite; }
+        .status-dot.error { background: var(--error); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .console-actions { display: flex; gap: 8px; }
+        .console-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8b949e; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .console-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .console-btn.ai-btn { background: linear-gradient(135deg, #4285f4 0%, #9b72cb 100%); color: white; border: none; }
+        .console-btn.ai-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+        .console-output { flex: 1; padding: 20px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+        .console-output .line { padding: 3px 0; }
+        .console-output .timestamp { color: #444; margin-right: 12px; }
+        .console-output .cmd { color: var(--accent); font-weight: 600; }
+        .console-output .success { color: var(--success); }
+        .console-output .warning { color: var(--warning); }
+        .console-output .error { color: var(--error); }
+        .console-output .info { color: #6e7681; }
+
+        .console-input { display: flex; align-items: center; padding: 12px 20px; background: #1a1a1a; border-top: 1px solid var(--border); }
+        .console-input span { color: var(--accent); margin-right: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        .console-input input { flex: 1; background: transparent; border: none; color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; outline: none; }
+
+        /* Tool Config Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 1001; }
+        .modal { background: var(--sidebar); width: 480px; padding: 30px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .modal h2 { margin: 0 0 20px 0; color: white; font-size: 1.3rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: #8b949e; }
+        .form-group input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; transition: 0.2s; }
+        .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #1f6feb 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow); }
+        .btn-cancel { background: transparent; color: #8b949e; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+    </style>
+</head>
+<body>
+
+<!-- SVG Icon Definitions -->
+<svg style="display: none;">
+    <defs>
+        <symbol id="icon-terminal" viewBox="0 0 24 24">
+            <path d="M4 17l6-5-6-5m8 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-zap" viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+        </symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24">
+            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-copy" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-brain" viewBox="0 0 24 24">
+            <path d="M12 4.5a2.5 2.5 0 00-4.96-.46 2.5 2.5 0 00-1.98 3 2.5 2.5 0 00-1.32 4.24 3 3 0 00.34 5.58 2.5 2.5 0 002.96 3.08A2.5 2.5 0 0012 19.5a2.5 2.5 0 004.96.44 2.5 2.5 0 002.96-3.08 3 3 0 00.34-5.58 2.5 2.5 0 00-1.32-4.24 2.5 2.5 0 00-1.98-3A2.5 2.5 0 0012 4.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M12 4.5v15M9 7l4.5 4.5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-rocket" viewBox="0 0 24 24">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09zM12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+    </defs>
+</svg>
+
+<div class="sidebar">
+    <div class="brand">
+        <svg class="icon icon-lg"><use href="#icon-zap"/></svg>
+        HackerDeX Lab
+    </div>
+    <ul class="category-list" id="categoryList"></ul>
+</div>
+
+<div class="main">
+    <div class="header">
+        <div class="header-left">
+            <h1 id="pageTitle">Security Tools</h1>
+            <p>Select a tool from any category to configure and launch a scan.</p>
+        </div>
+        <div class="header-right">
+            <button class="header-btn" id="toggleConsoleBtn" onclick="toggleConsole()">
+                <svg class="icon"><use href="#icon-terminal"/></svg>
+                Terminal
+            </button>
+        </div>
+    </div>
+
+    <div class="tools-panel">
+        <div class="tool-grid" id="toolGrid"></div>
+    </div>
+</div>
+
+<!-- Console Modal -->
+<div class="console-overlay" id="consoleOverlay" onclick="closeConsoleOnBackdrop(event)">
+    <div class="console-modal" onclick="event.stopPropagation()">
+        <div class="console-header">
+            <div class="console-title">
+                <div class="console-dots">
+                    <div class="console-dot red" onclick="toggleConsole()"></div>
+                    <div class="console-dot yellow"></div>
+                    <div class="console-dot green"></div>
+                </div>
+                <span>Terminal — HackerDeX</span>
+            </div>
+            <div class="console-status">
+                <div class="status-dot ready" id="statusDot"></div>
+                <span id="statusText">Ready</span>
+            </div>
+            <div class="console-actions">
+                <button class="console-btn" onclick="clearConsole()">
+                    <svg class="icon"><use href="#icon-trash"/></svg>
+                    Clear
+                </button>
+                <button class="console-btn" onclick="copyOutput()">
+                    <svg class="icon"><use href="#icon-copy"/></svg>
+                    Copy
+                </button>
+                <button class="console-btn ai-btn" onclick="analyzeWithGemini()">
+                    <svg class="icon"><use href="#icon-brain"/></svg>
+                    Analyze
+                </button>
+            </div>
+        </div>
+        <div class="console-output" id="consoleOutput"></div>
+        <div class="console-input">
+            <span>$</span>
+            <input type="text" placeholder="Select a tool to run a scan..." disabled>
+        </div>
+    </div>
+</div>
+
+<!-- Tool Config Modal -->
+<div class="modal-overlay" id="configModal">
+    <div class="modal">
+        <h2 id="modalToolName">Tool Name</h2>
+        <div class="form-group">
+            <label>TARGET URL / IP</label>
+            <input type="text" id="targetInput" placeholder="http://host.docker.internal:5000">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="startScan()">
+                <svg class="icon"><use href="#icon-rocket"/></svg>
+                Launch Scan
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    let currentTools = {};
+    let selectedTool = null;
+    let consoleOpen = false;
+
+    const socket = io();
+    const consoleOutput = document.getElementById('consoleOutput');
+
+    function log(text, type = 'info') {
+        const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+        const line = document.createElement('div');
+        line.className = 'line';
+        line.innerHTML = `<span class="timestamp">[${time}]</span><span class="${type}">${escapeHtml(text)}</span>`;
+        consoleOutput.appendChild(line);
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function setStatus(status) {
+        const dot = document.getElementById('statusDot');
+        const text = document.getElementById('statusText');
+        dot.className = 'status-dot ' + status;
+        text.innerText = status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
+    function toggleConsole() {
+        consoleOpen = !consoleOpen;
+        document.getElementById('consoleOverlay').style.display = consoleOpen ? 'flex' : 'none';
+        document.getElementById('toggleConsoleBtn').classList.toggle('active', consoleOpen);
+    }
+
+    function closeConsoleOnBackdrop(e) {
+        if (e.target === document.getElementById('consoleOverlay')) {
+            toggleConsole();
+        }
+    }
+
+    function clearConsole() {
+        consoleOutput.innerHTML = '';
+        log('Console cleared', 'info');
+    }
+
+    function copyOutput() {
+        const text = consoleOutput.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            log('Output copied to clipboard!', 'success');
+        });
+    }
+
+    // Socket events
+    socket.on('connect', () => {
+        log('WebSocket connected', 'success');
+        setStatus('ready');
+    });
+
+    socket.on('scan_output', (data) => {
+        const line = data.line.trim();
+        let type = 'info';
+        if (line.toLowerCase().includes('error') || line.toLowerCase().includes('failed')) type = 'error';
+        else if (line.toLowerCase().includes('warning') || line.toLowerCase().includes('warn')) type = 'warning';
+        else if (line.toLowerCase().includes('success') || line.toLowerCase().includes('found') || line.toLowerCase().includes('open')) type = 'success';
+
+        log(data.line.replace(/\n$/, ''), type);
+    });
+
+    socket.on('scan_complete', (data) => {
+        log(`Scan complete (exit: ${data.exit_code})`, data.exit_code === 0 ? 'success' : 'warning');
+        setStatus('ready');
+
+        // Fetch output for analysis
+        fetch(`/api/status/${data.job_id}`)
+            .then(r => r.json())
+            .then(job => {
+                lastScanOutput = job.output || '';
+                lastScanTool = job.tool || '';
+                lastScanTarget = job.target || '';
+            });
+    });
+
+    socket.on('scan_error', (data) => {
+        log(`Error: ${data.error}`, 'error');
+        setStatus('error');
+    });
+
+    // Load tools
+    fetch('/api/tools')
+        .then(r => r.json())
+        .then(catalog => {
+            currentTools = catalog;
+            const categories = Object.keys(catalog);
+            const list = document.getElementById('categoryList');
+
+            categories.forEach((cat, index) => {
+                const li = document.createElement('li');
+                li.className = 'category-item';
+                li.innerHTML = `${cat} <span class="tool-count">${catalog[cat].length}</span>`;
+                li.onclick = () => loadCategory(cat, li);
+                list.appendChild(li);
+                if (index === 0) loadCategory(cat, li);
+            });
+
+            log(`Loaded ${Object.values(catalog).flat().length} tools in ${categories.length} categories`, 'success');
+        });
+
+    function loadCategory(name, element) {
+        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        document.getElementById('pageTitle').innerText = name;
+        const grid = document.getElementById('toolGrid');
+        grid.innerHTML = '';
+
+        const tools = currentTools[name] || [];
+        tools.forEach(tool => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<h3>${tool}</h3><p>Click to configure and launch.</p>`;
+            card.onclick = () => openModal(tool);
+            grid.appendChild(card);
+        });
+    }
+
+    function openModal(toolName) {
+        selectedTool = toolName;
+        document.getElementById('modalToolName').innerText = toolName;
+        document.getElementById('configModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('configModal').style.display = 'none';
+        selectedTool = null;
+    }
+
+    function startScan() {
+        const target = document.getElementById('targetInput').value;
+        if (!target) return alert("Please enter a target!");
+
+        closeModal();
+
+        if (!consoleOpen) toggleConsole();
+
+        log(`Launching ${selectedTool} against ${target}...`, 'cmd');
+        setStatus('running');
+
+        fetch('/api/scan', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ tool: selectedTool, target: target })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                log(`Error: ${data.message}`, 'error');
+                setStatus('error');
+                return;
+            }
+            log(`Job started: ${data.job_id}`, 'info');
+        });
+    }
+
+    // Initial messages
+    log('HackerDeX Security Lab v1.0', 'cmd');
+    log('Ready to scan. Select a tool to begin.', 'info');
+
+    // Check Gemini status
+    fetch('/api/gemini-status')
+        .then(r => r.json())
+        .then(data => {
+            if (data.configured) {
+                log(`Gemini ${data.model} ready for analysis`, 'success');
+            } else {
+                log('Gemini API not configured (set GEMINI_API_KEY)', 'warning');
+            }
+        });
+
+    // Store last scan info for analysis
+    let lastScanOutput = '';
+    let lastScanTool = '';
+    let lastScanTarget = '';
+
+    function analyzeWithGemini() {
+        if (!lastScanOutput) {
+            log('No scan output to analyze. Run a scan first!', 'warning');
+            return;
+        }
+
+        log('Sending output to Gemini 2.5 Pro for analysis...', 'cmd');
+        setStatus('running');
+
+        fetch('/api/analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                output: lastScanOutput,
+                tool: lastScanTool,
+                target: lastScanTarget
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                log(`Analysis Error: ${data.error}`, 'error');
+                setStatus('error');
+                return;
+            }
+
+            log('=== GEMINI ANALYSIS ===', 'cmd');
+            const lines = data.analysis.split('\n');
+            lines.forEach(line => {
+                if (line.startsWith('##') || line.startsWith('**')) {
+                    log(line, 'cmd');
+                } else if (line.toLowerCase().includes('high') || line.toLowerCase().includes('critical')) {
+                    log(line, 'error');
+                } else if (line.toLowerCase().includes('medium') || line.toLowerCase().includes('warning')) {
+                    log(line, 'warning');
+                } else if (line.includes('✓') || line.toLowerCase().includes('low')) {
+                    log(line, 'success');
+                } else {
+                    log(line, 'info');
+                }
+            });
+            log('=== END ANALYSIS ===', 'cmd');
+            setStatus('ready');
+        })
+        .catch(err => {
+            log(`Network error: ${err}`, 'error');
+            setStatus('error');
+        });
+    }
+</script>
+
+</body>
+</html>

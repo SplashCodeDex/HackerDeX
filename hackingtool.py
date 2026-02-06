@@ -203,7 +203,6 @@ def interact_menu():
 
 def main():
     try:
-    try:
         # Patch: Bypass Linux check for educational exploration on Windows
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
