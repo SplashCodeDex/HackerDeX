@@ -14,9 +14,10 @@ class BaseSessionParser:
     def parse(self, output: str, target_ip: str = "", vuln_id: str = "") -> List[Session]:
         """
         Parse tool output and return detected sessions.
-        Override in subclasses.
+        Override in subclasses or return empty list.
         """
-        raise NotImplementedError
+        # Default implementation: return empty list (no sessions detected)
+        return []
 
 
 class SQLMapParser(BaseSessionParser):

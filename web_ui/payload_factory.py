@@ -181,7 +181,7 @@ exec(bytes(o).decode())
 """
             return stub.strip()
 
-        return payload # Fallback for now
+        return payload  # Evasion level not recognized, return original
 
     def _ai_polymorph(self, payload, lang):
         """Uses Gemini to rewrite the payload logic/variables for evasion."""

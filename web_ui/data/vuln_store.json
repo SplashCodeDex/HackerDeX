@@ -1,37 +1,78 @@
 {
     "targets": {
-        "5ababd603b22": {
-            "id": "5ababd603b22",
-            "main_target": "example.com",
+        "22c01b133bc4": {
+            "id": "22c01b133bc4",
+            "main_target": "target-a.com",
             "aliases": [
-                "example.com"
+                "target-a.com"
             ],
             "ports": [],
-            "vulnerabilities": [],
+            "vulnerabilities": [
+                {
+                    "title": "Creds leaked",
+                    "severity": "Info",
+                    "details": "password: Password123",
+                    "affected_url": "",
+                    "cve_id": null,
+                    "source_tool": "",
+                    "source_layer": "network",
+                    "privilege_level": "none",
+                    "strategic_advantage": "",
+                    "confidence": 1.0,
+                    "discovered_at": "2026-02-07T14:53:28.485833",
+                    "verified": false,
+                    "verification_script": null,
+                    "finding_id": "0431af43"
+                }
+            ],
             "urls": [],
             "technologies": [],
             "os_info": {},
             "dns_info": {},
             "osint_info": {
                 "emails": [
-                    "admin@example.com"
-                ],
-                "subdomains": [
-                    "dev.example.com"
+                    "admin@corp.com"
                 ]
             },
+            "risk_score": 1.0,
+            "priority_level": "low",
+            "scan_history": [],
+            "last_seen": "2026-02-07T14:53:28.485148"
+        },
+        "c4c13b74cd82": {
+            "id": "c4c13b74cd82",
+            "main_target": "target-b.com",
+            "aliases": [
+                "target-b.com"
+            ],
+            "ports": [
+                {
+                    "port": 22,
+                    "protocol": "tcp",
+                    "service": "ssh",
+                    "version": "",
+                    "last_seen": "2026-02-07T14:53:28.487575"
+                }
+            ],
+            "vulnerabilities": [],
+            "urls": [],
+            "technologies": [],
+            "os_info": {},
+            "dns_info": {},
+            "osint_info": {},
             "risk_score": 0.0,
             "priority_level": "low",
             "scan_history": [],
-            "last_seen": "2026-02-07T11:26:03.774967"
+            "last_seen": "2026-02-07T14:53:28.487537"
         }
     },
     "alias_index": {
-        "example.com": "5ababd603b22"
+        "target-a.com": "22c01b133bc4",
+        "target-b.com": "c4c13b74cd82"
     },
     "metadata": {
         "created_at": "2026-02-07T09:09:27.939166",
-        "last_modified": "2026-02-07T11:26:03.774977",
-        "total_findings": 0
+        "last_modified": "2026-02-07T14:53:28.487584",
+        "total_findings": 2
     }
 }

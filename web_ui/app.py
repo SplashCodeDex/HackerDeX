@@ -14,6 +14,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import shared managers (ensure they are initialized)
 import managers
 
+# Start CVE auto-updater
+from cve_auto_updater import auto_updater
+print("[*] CVE auto-updater started (updates every 6 hours)")
+
 # Import Blueprints
 from blueprints.scans import scans_bp
 from blueprints.intel_routes import intel_bp

