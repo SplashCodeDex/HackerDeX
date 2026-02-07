@@ -12,11 +12,11 @@
 - [x] Task: Develop the success-based weighting algorithm for tool prioritization 3a1380d
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Autonomous Orchestration & Tool Selection' (Protocol in workflow.md)
 
-## Phase 3: Pivoting & Lateral Movement Logic
-- [ ] Task: Implement "Foothold Detection" to trigger post-exploitation workflows
-- [ ] Task: Develop the internal network discovery orchestrator for pivoted nodes
-- [ ] Task: Create the cross-target credential correlation engine for lateral movement
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Pivoting & Lateral Movement Logic' (Protocol in workflow.md)
+## Phase 3: Pivoting & Lateral Movement Logic [checkpoint: 0ddc1df]
+- [x] Task: Implement "Foothold Detection" to trigger post-exploitation workflows 0ddc1df
+- [x] Task: Develop the internal network discovery orchestrator for pivoted nodes 0ddc1df
+- [x] Task: Create the cross-target credential correlation engine for lateral movement 0ddc1df
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Pivoting & Lateral Movement Logic' (Protocol in workflow.md)
 
 ## Phase 4: Observability & Human-in-the-Loop
 - [ ] Task: Implement the "Reasoning vs. Action" real-time logging system
