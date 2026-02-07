@@ -35,9 +35,9 @@
     - [x] Sub-task: Update `web_ui/app.py` and `context_injector.py` to utilize the standardized output from `ToolExecutor`
     - [x] Sub-task: Ensure parsed data is correctly saved to `VulnStore`
 
-- [ ] Task: Verify Key Parsers
-    - [ ] Sub-task: Create test cases with sample output for Nmap, SQLMap, and Nikto
-    - [ ] Sub-task: Validate that `parsers/` correctly extract data from the new captured output format
+- [x] Task: Verify Key Parsers [3b304f0]
+    - [x] Sub-task: Create test cases with sample output for Nmap, SQLMap, and Nikto
+    - [x] Sub-task: Validate that `parsers/` correctly extract data from the new captured output format
 
 - [ ] Task: Conductor - User Manual Verification 'Parser & VulnStore Integration' (Protocol in workflow.md)
 
