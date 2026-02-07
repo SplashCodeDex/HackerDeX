@@ -316,10 +316,14 @@
             <div class="chat-bubble agent">Agent initialized. Ready for orders.<span class="chat-timestamp">Now</span></div>
         </div>
 
-        <div class="modal-actions">
-            <button class="btn btn-primary" onclick="startAutoPilot()" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #a5f3fc 0%, #4285f4 100%); color: black;">
+        <div class="modal-actions" style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="startAutoPilot()" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #a5f3fc 0%, #4285f4 100%); color: black;">
                 <svg class="icon"><use href="#icon-rocket"/></svg>
                 Launch Auto-Pilot
+            </button>
+            <button class="btn" onclick="stopAutoPilot()" style="background: rgba(248,81,73,0.2); color: var(--error); border: 1px solid var(--error);">
+                <svg class="icon"><use href="#icon-trash"/></svg>
+                Kill Switch
             </button>
         </div>
     </div>

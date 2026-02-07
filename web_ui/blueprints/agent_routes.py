@@ -21,6 +21,15 @@ def run_agent_background(goal, target):
         socketio.emit('agent_update', {'message': f'❌ Agent Crash: {str(e)}'})
         logging.error(f"Agent Crash: {e}")
 
+@agent_bp.route('/api/autopilot/stop', methods=['POST'])
+def stop_autopilot():
+    agent_manager.stop_mission()
+    return jsonify({"status": "stopped", "message": "Kill switch activated. Mission stopping."})
+
+@agent_bp.route('/api/autopilot/reasoning')
+def get_reasoning_history():
+    return jsonify(agent_manager.logger.get_history())
+
 @agent_bp.route('/api/autopilot', methods=['POST'])
 def run_autopilot():
     data = request.json

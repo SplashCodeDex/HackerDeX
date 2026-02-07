@@ -39,6 +39,30 @@ socket.on('agent_update', (data) => {
     chatDiv.scrollTop = chatDiv.scrollHeight;
 });
 
+socket.on('agent_reasoning', (data) => {
+    // Optionally log to a separate reasoning panel or just the chat
+    const chatDiv = document.getElementById('agentChat');
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble agent';
+    bubble.style.borderLeft = '3px solid var(--accent)';
+    bubble.innerHTML = `
+        <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 5px;">[STRATEGIC REASONING STEP ${data.step}]</div>
+        <b>Thought:</b> ${data.thought}<br>
+        <b>Command:</b> <code>${data.command}</code><br>
+        <b>Expectation:</b> ${data.expected_gain}
+    `;
+    chatDiv.appendChild(bubble);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+});
+
+function stopAutoPilot() {
+    if (!confirm("Are you sure you want to activate the KILL SWITCH?")) return;
+    
+    safeFetch('/api/autopilot/stop', { method: 'POST' })
+        .then(data => showToast(data.message, 'warning'))
+        .catch(err => showToast('Failed to stop agent', 'error'));
+}
+
 function startAutoPilot() {
     const target = document.getElementById('agentTarget').value;
     const goal = document.getElementById('agentGoal').value;
