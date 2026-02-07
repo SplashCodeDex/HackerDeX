@@ -28,7 +28,7 @@
 
 - [x] Task: Conductor - User Manual Verification 'Tool Migration (Batch 1 - High Priority)' (Protocol in workflow.md)
 
-## Phase 3: Parser & VulnStore Integration
+## Phase 3: Parser & VulnStore Integration [checkpoint: 5a0515b]
 
 - [x] Task: Connect Executor to Parser Registry [bbb49ab]
     - [x] Sub-task: Write tests for data flow from Executor to Parser
@@ -39,7 +39,7 @@
     - [x] Sub-task: Create test cases with sample output for Nmap, SQLMap, and Nikto
     - [x] Sub-task: Validate that `parsers/` correctly extract data from the new captured output format
 
-- [~] Task: Conductor - User Manual Verification 'Parser & VulnStore Integration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Parser & VulnStore Integration' (Protocol in workflow.md)
 
 ## Phase 4: Full Suite Migration & Cleanup
 
