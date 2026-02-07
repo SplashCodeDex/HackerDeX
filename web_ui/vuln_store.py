@@ -5,6 +5,7 @@ from datetime import datetime
 import hashlib
 from .prioritizer import Prioritizer
 from .correlator import Correlator
+from .deduper import Deduper
 from .models import VulnerabilityModel
 
 class VulnStore:
@@ -34,6 +35,7 @@ class VulnStore:
         self.lock = threading.RLock()
         self.prioritizer = Prioritizer()
         self.correlator = Correlator(self)
+        self.deduper = Deduper()
         self.load_from_disk()
         self._initialized = True
 
@@ -94,33 +96,36 @@ class VulnStore:
 
     def add_vulnerability(self, target_id, title, severity, details="", url="", tool="",
                           source_layer="network", privilege_level="none",
-                          strategic_advantage="", confidence=1.0):
+                          strategic_advantage="", confidence=1.0, cve_id=None):
         with self.lock:
             target = self.targets.get(target_id)
             if not target: return
 
-            vuln_id = hashlib.md5(f"{title}{url}".encode()).hexdigest()[:8]
+            new_vuln = VulnerabilityModel(
+                title=title,
+                severity=severity,
+                details=details,
+                affected_url=url,
+                cve_id=cve_id,
+                source_tool=tool,
+                source_layer=source_layer,
+                privilege_level=privilege_level,
+                strategic_advantage=strategic_advantage,
+                confidence=confidence,
+                discovered_at=datetime.now().isoformat()
+            )
 
-            # Dedup by title and URL
-            for v in target['vulnerabilities']:
-                if v.get('finding_id') == vuln_id:
+            # Robust Dedup
+            for v_dict in target['vulnerabilities']:
+                existing_vuln = VulnerabilityModel(**v_dict)
+                if self.deduper.is_duplicate(new_vuln, existing_vuln):
                     return
 
-            target['vulnerabilities'].append({
-                "finding_id": vuln_id,
-                "title": title,
-                "severity": severity,
-                "details": details,
-                "affected_url": url,
-                "source_tool": tool,
-                "source_layer": source_layer,
-                "privilege_level": privilege_level,
-                "strategic_advantage": strategic_advantage,
-                "confidence": confidence,
-                "discovered_at": datetime.now().isoformat(),
-                "verified": False,
-                "verification_script": None
-            })
+            vuln_id = hashlib.md5(f"{title}{url}{cve_id}".encode()).hexdigest()[:8]
+            vuln_data = new_vuln.model_dump()
+            vuln_data["finding_id"] = vuln_id
+            
+            target['vulnerabilities'].append(vuln_data)
             self._update_metadata()
 
     def add_url(self, target_id, url, method="GET", tool=""):

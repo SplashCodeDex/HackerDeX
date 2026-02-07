@@ -105,5 +105,18 @@ class TestVulnStoreV2(unittest.TestCase):
         self.assertIn("10.0.0.1", self.store.alias_index)
         self.assertEqual(self.store.alias_index["10.0.0.1"], tid)
 
+    def test_robust_deduplication(self):
+        target = "dedup.test.com"
+        tid = self.store.get_or_create_target(target)
+        
+        # Add SQLi
+        self.store.add_vulnerability(tid, title="SQL Injection", severity="High", url="http://test.com/p")
+        
+        # Add similar SQLi (should be ignored)
+        self.store.add_vulnerability(tid, title="Blind SQLi", severity="High", url="http://test.com/p")
+        
+        profile = self.store.get_target_profile(target)
+        self.assertEqual(len(profile['vulnerabilities']), 1)
+
 if __name__ == '__main__':
     unittest.main()

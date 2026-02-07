@@ -14,6 +14,7 @@ class VulnerabilityModel(BaseModel):
     severity: str
     details: str = ""
     affected_url: Optional[str] = None
+    cve_id: Optional[str] = None
     source_tool: str = ""
     source_layer: str = "network"
     privilege_level: str = "none"
