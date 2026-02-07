@@ -23,17 +23,6 @@ def clear_screen():
     os.system("cls" if system() == "Windows" else "clear")
 
 
-def validate_input(ip, val_range):
-    val_range = val_range or []
-    try:
-        ip = int(ip)
-        if ip in val_range:
-            return ip
-    except Exception:
-        return None
-    return None
-
-
 class HackingTool(object):
     TITLE: str = ""
     DESCRIPTION: str = ""
