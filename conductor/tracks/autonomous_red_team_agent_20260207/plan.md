@@ -18,9 +18,9 @@
 - [x] Task: Create the cross-target credential correlation engine for lateral movement 0ddc1df
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Pivoting & Lateral Movement Logic' (Protocol in workflow.md)
 
-## Phase 4: Observability & Human-in-the-Loop
-- [ ] Task: Implement the "Reasoning vs. Action" real-time logging system
-- [ ] Task: Update the Web UI with the Mission Control dashboard and Kill Switch
-- [ ] Task: Add manual command approval/override gates for high-risk actions
-- [ ] Task: Final end-to-end mission verification tests across complex targets
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Observability & Human-in-the-Loop' (Protocol in workflow.md)
+## Phase 4: Observability & Human-in-the-Loop [checkpoint: 0639a11]
+- [x] Task: Implement the "Reasoning vs. Action" real-time logging system 0639a11
+- [x] Task: Update the Web UI with the Mission Control dashboard and Kill Switch 0639a11
+- [x] Task: Add manual command approval/override gates for high-risk actions 0639a11
+- [x] Task: Final end-to-end mission verification tests across complex targets 0639a11
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Observability & Human-in-the-Loop' (Protocol in workflow.md)
