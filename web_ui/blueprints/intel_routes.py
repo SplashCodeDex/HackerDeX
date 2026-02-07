@@ -9,6 +9,11 @@ intel_bp = Blueprint('intel', __name__)
 def list_targets():
     return jsonify(store.get_all_targets_summary())
 
+@intel_bp.route('/api/intel/prioritized-vulns')
+def prioritized_vulns():
+    """Returns a globally prioritized list of vulnerabilities."""
+    return jsonify(store.get_prioritized_vulnerabilities())
+
 @intel_bp.route('/api/targets/<tid>/profile')
 def get_target_profile(tid):
     target = store.targets.get(tid)

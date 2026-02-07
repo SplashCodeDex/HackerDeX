@@ -217,12 +217,29 @@ class VulnStore:
         return self.targets.get(target_id)
 
     def get_all_targets_summary(self):
-        return [
+        return sorted([
             {
                 "id": t['id'],
                 "target": t['main_target'],
                 "vulns_count": len(t['vulnerabilities']),
                 "ports_count": len(t['ports']),
+                "risk_score": t.get('risk_score', 0.0),
+                "priority_level": t.get('priority_level', 'low'),
                 "last_seen": t['last_seen']
             } for t in self.targets.values()
-        ]
+        ], key=lambda x: x['risk_score'], reverse=True)
+
+    def get_prioritized_vulnerabilities(self):
+        """Returns all vulnerabilities from all targets, sorted by risk score."""
+        all_vulns = []
+        for tid, target in self.targets.items():
+            for v in target['vulnerabilities']:
+                v_copy = v.copy()
+                v_copy['target_id'] = tid
+                v_copy['main_target'] = target['main_target']
+                # Calculate individual score for sorting if not stored
+                vuln_model = VulnerabilityModel(**v)
+                v_copy['score'] = self.prioritizer.calculate_vuln_score(vuln_model)
+                all_vulns.append(v_copy)
+        
+        return sorted(all_vulns, key=lambda x: x['score'], reverse=True)
