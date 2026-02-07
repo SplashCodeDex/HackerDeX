@@ -7,6 +7,7 @@ from rich.theme import Theme
 from rich.table import Table
 from rich.panel import Panel
 from rich.prompt import Prompt
+from rich.text import Text
 
 _theme = Theme({"purple": "#7B61FF"})
 console = Console(theme=_theme)
@@ -18,8 +19,12 @@ class Sqlmap(HackingTool):
                   "automates the process of detecting and exploiting SQL injection flaws " \
                   "and taking over database servers. [!] python3 sqlmap.py -u [http://example.com] --batch --banner. More usage: https://github.com/sqlmapproject/sqlmap/wiki/Usage"
     INSTALL_COMMANDS = ["sudo git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git sqlmap-dev"]
-    RUN_COMMANDS = ["cd sqlmap-dev;python3 sqlmap.py --wizard"]
     PROJECT_URL = "https://github.com/sqlmapproject/sqlmap"
+
+    def run(self):
+        console.print(Panel(Text(self.TITLE, justify="center"), style="purple"))
+        target = Prompt.ask("Enter Target URL (e.g. http://example.com/id=1) >> ")
+        self.executor.run_blocking(f"sudo sqlmap -u {target} --batch --dbs")
 
 
 class NoSqlMap(HackingTool):
