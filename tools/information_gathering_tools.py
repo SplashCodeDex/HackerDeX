@@ -54,7 +54,7 @@ class PortScan(HackingTool):
         clear_screen()
         console.print(Panel(Text(self.TITLE, justify="center"), style=PURPLE_STYLE))
         target = Prompt.ask("[bold]Select a Target IP[/]", default="", show_default=False)
-        subprocess.run(["sudo", "nmap", "-O", "-Pn", target])
+        self.executor.run_blocking(f"sudo nmap -O -Pn {target}")
 
 
 class Host2IP(HackingTool):
@@ -152,7 +152,7 @@ class Striker(HackingTool):
         console.print(Panel(Text(self.TITLE, justify="center"), style=PURPLE_STYLE))
         site = Prompt.ask("Enter Site Name (example.com) >> ")
         os.chdir("Striker")
-        subprocess.run(["sudo", "python3", "striker.py", site])
+        self.executor.run_blocking(f"sudo python3 striker.py {site}")
 
 
 class SecretFinder(HackingTool):
@@ -196,7 +196,7 @@ class PortScannerRanger(HackingTool):
         console.print(Panel(Text(self.TITLE, justify="center"), style=PURPLE_STYLE))
         ip = Prompt.ask("Enter Ip >> ")
         os.chdir("rang3r")
-        subprocess.run(["sudo", "python", "rang3r.py", "--ip", ip])
+        self.executor.run_blocking(f"sudo python rang3r.py --ip {ip}")
 
 
 class Breacher(HackingTool):
@@ -209,7 +209,7 @@ class Breacher(HackingTool):
         console.print(Panel(Text(self.TITLE, justify="center"), style=PURPLE_STYLE))
         domain = Prompt.ask("Enter domain (example.com) >> ")
         os.chdir("Breacher")
-        subprocess.run(["python3", "breacher.py", "-u", domain])
+        self.executor.run_blocking(f"python3 breacher.py -u {domain}")
 
 
 class InformationGatheringTools(HackingToolsCollection):
