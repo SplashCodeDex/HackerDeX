@@ -54,6 +54,10 @@ class VulnStore:
                     "urls": [],
                     "technologies": [],
                     "os_info": {},
+                    "dns_info": {},
+                    "osint_info": {},
+                    "risk_score": 0.0,
+                    "priority_level": "low",
                     "scan_history": [],
                     "last_seen": datetime.now().isoformat()
                 }
@@ -83,7 +87,9 @@ class VulnStore:
                 })
             self._update_metadata()
 
-    def add_vulnerability(self, target_id, title, severity, details="", url="", tool=""):
+    def add_vulnerability(self, target_id, title, severity, details="", url="", tool="",
+                          source_layer="network", privilege_level="none",
+                          strategic_advantage="", confidence=1.0):
         with self.lock:
             target = self.targets.get(target_id)
             if not target: return
@@ -102,7 +108,13 @@ class VulnStore:
                 "details": details,
                 "affected_url": url,
                 "source_tool": tool,
-                "discovered_at": datetime.now().isoformat()
+                "source_layer": source_layer,
+                "privilege_level": privilege_level,
+                "strategic_advantage": strategic_advantage,
+                "confidence": confidence,
+                "discovered_at": datetime.now().isoformat(),
+                "verified": False,
+                "verification_script": None
             })
             self._update_metadata()
 
@@ -129,6 +141,20 @@ class VulnStore:
 
             if not exists:
                 target['technologies'].append({"name": tech_name, "version": version})
+            self._update_metadata()
+
+    def update_dns_info(self, target_id, dns_data):
+        with self.lock:
+            target = self.targets.get(target_id)
+            if not target: return
+            target['dns_info'].update(dns_data)
+            self._update_metadata()
+
+    def update_osint_info(self, target_id, osint_data):
+        with self.lock:
+            target = self.targets.get(target_id)
+            if not target: return
+            target['osint_info'].update(osint_data)
             self._update_metadata()
 
     def _update_metadata(self):
@@ -161,6 +187,9 @@ class VulnStore:
                     self.metadata = content.get("metadata", self.metadata)
             except Exception as e:
                 print(f"Error loading VulnStore: {e}")
+
+    def get_target(self, target_id):
+        return self.targets.get(target_id)
 
     def get_target_profile(self, target_str):
         target_id = self.alias_index.get(target_str)
