@@ -78,5 +78,22 @@ class TestVulnStoreV2(unittest.TestCase):
         profile = self.store.get_target_profile(target)
         self.assertEqual(profile['osint_info']['emails'], ["admin@example.com"])
 
+    def test_automatic_risk_calculation(self):
+        target = "risky-target.com"
+        tid = self.store.get_or_create_target(target)
+        
+        self.store.add_vulnerability(
+            tid, 
+            title="RCE", 
+            severity="Critical", 
+            privilege_level="root",
+            strategic_advantage="rce"
+        )
+        
+        profile = self.store.get_target_profile(target)
+        # (10 * 2) + 5 = 25
+        self.assertEqual(profile['risk_score'], 25.0)
+        self.assertEqual(profile['priority_level'], "critical")
+
 if __name__ == '__main__':
     unittest.main()

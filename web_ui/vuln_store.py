@@ -3,6 +3,8 @@ import os
 import threading
 from datetime import datetime
 import hashlib
+from .prioritizer import Prioritizer
+from .models import VulnerabilityModel
 
 class VulnStore:
     _instance = None
@@ -29,6 +31,7 @@ class VulnStore:
             "total_findings": 0
         }
         self.lock = threading.Lock()
+        self.prioritizer = Prioritizer()
         self.load_from_disk()
         self._initialized = True
 
@@ -159,10 +162,15 @@ class VulnStore:
 
     def _update_metadata(self):
         self.metadata["last_modified"] = datetime.now().isoformat()
-        # count total findings
+        # count total findings and update risk scores
         total = 0
         for t in self.targets.values():
             total += len(t['ports']) + len(t['vulnerabilities'])
+            # Recalculate risk score for target
+            vulns = [VulnerabilityModel(**v) for v in t['vulnerabilities']]
+            t['risk_score'] = self.prioritizer.calculate_target_risk(vulns)
+            t['priority_level'] = self.prioritizer.get_priority_level(t['risk_score'])
+            
         self.metadata["total_findings"] = total
         self.save_to_disk()
 
