@@ -14,7 +14,7 @@
 
 - [x] Task: Conductor - User Manual Verification 'Core Execution Engine Refactor' (Protocol in workflow.md)
 
-## Phase 2: Tool Migration (Batch 1 - High Priority)
+## Phase 2: Tool Migration (Batch 1 - High Priority) [checkpoint: 0099fb2]
 
 - [x] Task: Migrate Information Gathering Tools [15b9926]
     - [x] Sub-task: Write tests for Nmap and other key info gathering tool wrappers
@@ -26,7 +26,7 @@
     - [x] Sub-task: Refactor `tools/sql_tools.py` to use the new execution method
     - [x] Sub-task: Verify output parsing for SQLMap
 
-- [~] Task: Conductor - User Manual Verification 'Tool Migration (Batch 1 - High Priority)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Tool Migration (Batch 1 - High Priority)' (Protocol in workflow.md)
 
 ## Phase 3: Parser & VulnStore Integration
 
