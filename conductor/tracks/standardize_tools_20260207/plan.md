@@ -30,10 +30,10 @@
 
 ## Phase 3: Parser & VulnStore Integration
 
-- [ ] Task: Connect Executor to Parser Registry
-    - [ ] Sub-task: Write tests for data flow from Executor to Parser
-    - [ ] Sub-task: Update `web_ui/app.py` and `context_injector.py` to utilize the standardized output from `ToolExecutor`
-    - [ ] Sub-task: Ensure parsed data is correctly saved to `VulnStore`
+- [x] Task: Connect Executor to Parser Registry [bbb49ab]
+    - [x] Sub-task: Write tests for data flow from Executor to Parser
+    - [x] Sub-task: Update `web_ui/app.py` and `context_injector.py` to utilize the standardized output from `ToolExecutor`
+    - [x] Sub-task: Ensure parsed data is correctly saved to `VulnStore`
 
 - [ ] Task: Verify Key Parsers
     - [ ] Sub-task: Create test cases with sample output for Nmap, SQLMap, and Nikto
