@@ -7,10 +7,10 @@
     - [x] Sub-task: Implement `ToolExecutor` with `run_async` and `run_blocking` methods using `subprocess`
     - [x] Sub-task: Implement real-time output capture (yielding lines)
 
-- [ ] Task: Update `HackingTool` Base Class
-    - [ ] Sub-task: Write tests ensuring `HackingTool` uses `ToolExecutor`
-    - [ ] Sub-task: Refactor `core.py` to integrate `ToolExecutor` into the base `HackingTool` class
-    - [ ] Sub-task: Deprecate `os.system` usage in the base class
+- [x] Task: Update `HackingTool` Base Class [5b8a31d]
+    - [x] Sub-task: Write tests ensuring `HackingTool` uses `ToolExecutor`
+    - [x] Sub-task: Refactor `core.py` to integrate `ToolExecutor` into the base `HackingTool` class
+    - [x] Sub-task: Deprecate `os.system` usage in the base class
 
 - [ ] Task: Conductor - User Manual Verification 'Core Execution Engine Refactor' (Protocol in workflow.md)
 
