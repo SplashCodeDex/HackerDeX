@@ -26,8 +26,11 @@ old_stdout = sys.stdout
 sys.stdout = StringIO()
 try:
     from hackingtool import all_tools
+    from core import ToolExecutor
 finally:
     sys.stdout = old_stdout
+
+executor = ToolExecutor()
 
 # VulnStore & Parsers Integration
 from vuln_store import VulnStore
@@ -172,32 +175,20 @@ def load_all_tools():
     return catalog
 
 def run_tool_with_streaming(job_id, command):
-    """Execute a tool command and stream output via WebSocket."""
+    """Execute a tool command and stream output via WebSocket using ToolExecutor."""
     try:
         jobs[job_id]['status'] = 'running'
         jobs[job_id]['started_at'] = datetime.now().isoformat()
 
-        process = subprocess.Popen(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1
-        )
-
         output_lines = []
-        for line in iter(process.stdout.readline, ''):
-            if line:
-                output_lines.append(line)
-                socketio.emit('scan_output', {'job_id': job_id, 'line': line})
-
-        process.wait()
+        for line in executor.run_async(command):
+            output_lines.append(line)
+            socketio.emit('scan_output', {'job_id': job_id, 'line': line})
 
         full_output = ''.join(output_lines)
         jobs[job_id]['output'] = full_output
         jobs[job_id]['status'] = 'completed'
-        jobs[job_id]['exit_code'] = process.returncode
+        jobs[job_id]['exit_code'] = executor.last_process.returncode if executor.last_process else 0
 
         # --- VulnStore Integration: Parse Output ---
         try:
@@ -413,18 +404,12 @@ If you have achieved the goal or cannot proceed, respond ONLY with JSON:
             socketio.emit('agent_update', {'message': f'⚡ Executing: `{command}`'})
             socketio.emit('agent_update', {'message': '--- TOOL OUTPUT START ---', 'type': 'divider'})
 
-            # Stream output line by line
-            process = subprocess.Popen(
-                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
-            )
-
+            # Stream output line by line using ToolExecutor
             output_lines = []
-            for line in iter(process.stdout.readline, ''):
-                if line:
-                    output_lines.append(line)
-                    socketio.emit('agent_update', {'message': line.strip(), 'type': 'tool_output'})
+            for line in executor.run_async(command):
+                output_lines.append(line)
+                socketio.emit('agent_update', {'message': line.strip(), 'type': 'tool_output'})
 
-            process.wait()
             output = ''.join(output_lines)
 
             socketio.emit('agent_update', {'message': '--- TOOL OUTPUT END ---', 'type': 'divider'})

@@ -164,6 +164,9 @@ class ToolExecutor:
     Supports both blocking and asynchronous (streaming) execution.
     """
 
+    def __init__(self):
+        self.last_process = None
+
     def run_blocking(self, command: str) -> dict:
         """
         Executes a command and waits for it to complete.
@@ -176,6 +179,7 @@ class ToolExecutor:
             stderr=subprocess.PIPE,
             text=True
         )
+        self.last_process = process
         stdout, stderr = process.communicate()
         return {
             "stdout": stdout,
@@ -196,6 +200,7 @@ class ToolExecutor:
             text=True,
             bufsize=1
         )
+        self.last_process = process
 
         for line in iter(process.stdout.readline, ''):
             if line:
