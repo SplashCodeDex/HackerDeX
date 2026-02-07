@@ -16,10 +16,10 @@
 
 ## Phase 2: Tool Migration (Batch 1 - High Priority)
 
-- [ ] Task: Migrate Information Gathering Tools
-    - [ ] Sub-task: Write tests for Nmap and other key info gathering tool wrappers
-    - [ ] Sub-task: Refactor `tools/information_gathering_tools.py` to use the new execution method
-    - [ ] Sub-task: Verify output streaming for these tools
+- [x] Task: Migrate Information Gathering Tools [15b9926]
+    - [x] Sub-task: Write tests for Nmap and other key info gathering tool wrappers
+    - [x] Sub-task: Refactor `tools/information_gathering_tools.py` to use the new execution method
+    - [x] Sub-task: Verify output streaming for these tools
 
 - [ ] Task: Migrate SQL Injection Tools
     - [ ] Sub-task: Write tests for SQLMap wrapper
