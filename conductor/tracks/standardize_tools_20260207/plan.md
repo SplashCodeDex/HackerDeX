@@ -26,7 +26,7 @@
     - [x] Sub-task: Refactor `tools/sql_tools.py` to use the new execution method
     - [x] Sub-task: Verify output parsing for SQLMap
 
-- [ ] Task: Conductor - User Manual Verification 'Tool Migration (Batch 1 - High Priority)' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Tool Migration (Batch 1 - High Priority)' (Protocol in workflow.md)
 
 ## Phase 3: Parser & VulnStore Integration
 
