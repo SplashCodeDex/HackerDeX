@@ -6,11 +6,11 @@
 - [x] Task: Create the Agent Context manager to feed real-time VulnStore data to the Brain 70b5c9a
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Reasoning Engine & Mission Planning' (Protocol in workflow.md)
 
-## Phase 2: Autonomous Orchestration & Tool Selection
-- [ ] Task: Build the Tool Capability Mapper for all 55+ tools (Matching goals to commands)
-- [ ] Task: Implement the Feedback-Loop controller for sequential tool execution
-- [ ] Task: Develop the success-based weighting algorithm for tool prioritization
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Autonomous Orchestration & Tool Selection' (Protocol in workflow.md)
+## Phase 2: Autonomous Orchestration & Tool Selection [checkpoint: 3a1380d]
+- [x] Task: Build the Tool Capability Mapper for all 55+ tools (Matching goals to commands) 3a1380d
+- [x] Task: Implement the Feedback-Loop controller for sequential tool execution 3a1380d
+- [x] Task: Develop the success-based weighting algorithm for tool prioritization 3a1380d
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Autonomous Orchestration & Tool Selection' (Protocol in workflow.md)
 
 ## Phase 3: Pivoting & Lateral Movement Logic
 - [ ] Task: Implement "Foothold Detection" to trigger post-exploitation workflows
