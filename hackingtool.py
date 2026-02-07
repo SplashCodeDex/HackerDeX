@@ -30,6 +30,7 @@ from tools.reverse_engineering import ReverseEngineeringTools
 from tools.sql_tools import SqlInjectionTools
 from tools.steganography import SteganographyTools
 from tools.tool_manager import ToolManager
+from tools.intelligence_engine import IntelligenceEngineTools
 from tools.webattack import WebAttackTools
 from tools.wireless_attack_tools import WirelessAttackTools
 from tools.wordlist_generator import WordlistGeneratorTools
@@ -67,6 +68,7 @@ TOOL_DEFINITIONS: List[Tuple[str, str]] = [
     ("XSS Attack Tools", "💥"),
     ("Steganograhy tools", "🖼️"),
     ("Other tools", "✨"),
+    ("Robust Intelligence Engine", "🧠"),
     ("Update or Uninstall | Hackingtool", "♻️"),
 ]
 
@@ -88,6 +90,7 @@ ALL_TOOLS: List[HackingToolsCollection] = [
     XSSAttackTools(),
     SteganographyTools(),
     OtherTools(),
+    IntelligenceEngineTools(),
     ToolManager()
 ]
 

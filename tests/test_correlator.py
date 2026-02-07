@@ -37,14 +37,15 @@ class TestCorrelator(unittest.TestCase):
         # For now, let's say it adds the IP as an alias to the domain profile.
         
     def test_identify_attack_surface_expansion(self):
-        # If we find a new IP in OSINT, the correlator should suggest it as a new target
+        # If we find a new IP in OSINT, the correlator should automatically link it
         domain = "example.com"
         tid = self.store.get_or_create_target(domain)
         self.store.update_osint_info(tid, {"ips": ["8.8.8.8"], "subdomains": ["ns1.example.com"]})
         
-        new_targets = self.correlator.discover_new_targets()
-        self.assertIn("8.8.8.8", new_targets)
-        self.assertIn("ns1.example.com", new_targets)
+        # Verify they became aliases automatically
+        self.assertIn("8.8.8.8", self.store.alias_index)
+        self.assertIn("ns1.example.com", self.store.alias_index)
+        self.assertEqual(self.store.alias_index["8.8.8.8"], tid)
 
 if __name__ == '__main__':
     unittest.main()

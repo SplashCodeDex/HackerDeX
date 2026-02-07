@@ -1,9 +1,38 @@
 from flask import Blueprint, jsonify, request
 from extensions import socketio
 from managers import store, jobs, get_gemini_client, GEMINI_MODEL, SAFETY_SETTINGS
+from attack_pather import AttackPather
+from next_best_action import NextBestActionEngine
 import logging
 
 intel_bp = Blueprint('intel', __name__)
+
+@intel_bp.route('/api/intel/attack-paths', methods=['POST'])
+def get_attack_paths():
+    """Generates strategic attack path analysis."""
+    client = get_gemini_client()
+    if not client:
+        return jsonify({"error": "Gemini API key missing"}), 400
+    
+    pather = AttackPather(client, store)
+    analysis = pather.analyze_attack_paths()
+    return jsonify({"status": "success", "analysis": analysis})
+
+@intel_bp.route('/api/intel/next-action', methods=['POST'])
+def get_next_action():
+    """Suggests the next best action for a target."""
+    data = request.json
+    target = data.get('target')
+    if not target:
+        return jsonify({"error": "Missing target"}), 400
+
+    client = get_gemini_client()
+    if not client:
+        return jsonify({"error": "Gemini API key missing"}), 400
+    
+    engine = NextBestActionEngine(client, store)
+    suggestion = engine.suggest_next_action(target)
+    return jsonify(suggestion)
 
 @intel_bp.route('/api/targets')
 def list_targets():
