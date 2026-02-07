@@ -6,3 +6,5 @@ google-genai
 lolcat
 requests
 rich
+arjun
+shutil

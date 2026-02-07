@@ -4,13 +4,14 @@ from rich.table import Table
 from rich import box
 from rich.traceback import install
 from rich.theme import Theme
+from rich.prompt import Prompt, IntPrompt, Confirm
 
 import os
 import sys
 import webbrowser
+import subprocess
 from platform import system
-from traceback import print_exc
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union, Optional
 
 # Enable rich tracebacks
 install()
@@ -43,7 +44,7 @@ class HackingTool(object):
     OPTIONS: List[Tuple[str, Callable]] = []
     PROJECT_URL: str = ""
 
-    def __init__(self, options=None, installable=True, runnable=True):
+    def __init__(self, options: Optional[List[Tuple[str, Callable]]] = None, installable: bool = True, runnable: bool = True):
         options = options or []
         if isinstance(options, list):
             self.OPTIONS = []
@@ -78,25 +79,25 @@ class HackingTool(object):
 
         console.print(table)
 
-        option_index = input("\n[?] Select an option: ").strip()
         try:
-            option_index = int(option_index)
-            if option_index - 1 in range(len(self.OPTIONS)):
+            option_index = IntPrompt.ask("\n[?] Select an option", default=99)
+            
+            if 1 <= option_index <= len(self.OPTIONS):
                 ret_code = self.OPTIONS[option_index - 1][1]()
                 if ret_code != 99:
-                    input("\nPress [Enter] to continue...")
+                    Prompt.ask("\nPress [bold green]Enter[/bold green] to continue")
             elif option_index == 98:
                 self.show_project_page()
             elif option_index == 99:
                 if parent is None:
                     sys.exit()
                 return 99
-        except (TypeError, ValueError):
-            console.print("[red]⚠ Please enter a valid option.[/red]")
-            input("\nPress [Enter] to continue...")
+            else:
+                console.print("[red]⚠ Please enter a valid option.[/red]")
+                Prompt.ask("\nPress [bold green]Enter[/bold green] to continue")
         except Exception:
             console.print_exception(show_locals=True)
-            input("\nPress [Enter] to continue...")
+            Prompt.ask("\nPress [bold green]Enter[/bold green] to continue")
         return self.show_options(parent=parent)
 
     def before_install(self): pass
@@ -104,9 +105,14 @@ class HackingTool(object):
     def install(self):
         self.before_install()
         if isinstance(self.INSTALL_COMMANDS, (list, tuple)):
-            for INSTALL_COMMAND in self.INSTALL_COMMANDS:
-                console.print(f"[yellow]→ {INSTALL_COMMAND}[/yellow]")
-                os.system(INSTALL_COMMAND)
+            for command in self.INSTALL_COMMANDS:
+                console.print(f"[yellow]→ {command}[/yellow]")
+                try:
+                    subprocess.run(command, shell=True, check=True)
+                except subprocess.CalledProcessError as e:
+                    console.print(f"[bold red]✘ Command failed: {command}[/bold red]")
+                    console.print(f"[red]Error: {e}[/red]")
+                    return
             self.after_install()
 
     def after_install(self):
@@ -118,9 +124,14 @@ class HackingTool(object):
     def uninstall(self):
         if self.before_uninstall():
             if isinstance(self.UNINSTALL_COMMANDS, (list, tuple)):
-                for UNINSTALL_COMMAND in self.UNINSTALL_COMMANDS:
-                    console.print(f"[red]→ {UNINSTALL_COMMAND}[/red]")
-                    os.system(UNINSTALL_COMMAND)
+                for command in self.UNINSTALL_COMMANDS:
+                    console.print(f"[red]→ {command}[/red]")
+                    try:
+                        subprocess.run(command, shell=True, check=True)
+                    except subprocess.CalledProcessError as e:
+                        console.print(f"[bold red]✘ Command failed: {command}[/bold red]")
+                        console.print(f"[red]Error: {e}[/red]")
+                        return
             self.after_uninstall()
 
     def after_uninstall(self): pass
@@ -130,9 +141,13 @@ class HackingTool(object):
     def run(self):
         self.before_run()
         if isinstance(self.RUN_COMMANDS, (list, tuple)):
-            for RUN_COMMAND in self.RUN_COMMANDS:
-                console.print(f"[cyan]⚙ Running:[/cyan] [bold]{RUN_COMMAND}[/bold]")
-                os.system(RUN_COMMAND)
+            for command in self.RUN_COMMANDS:
+                console.print(f"[cyan]⚙ Running:[/cyan] [bold]{command}[/bold]")
+                try:
+                    subprocess.run(command, shell=True, check=True)
+                except subprocess.CalledProcessError as e:
+                    console.print(f"[bold red]✘ Command failed: {command}[/bold red]")
+                    console.print(f"[red]Error: {e}[/red]")
             self.after_run()
 
     def after_run(self): pass
@@ -149,7 +164,7 @@ class HackingTool(object):
 class HackingToolsCollection(object):
     TITLE: str = ""
     DESCRIPTION: str = ""
-    TOOLS: List = []
+    TOOLS: List[HackingTool] = []
 
     def __init__(self):
         pass
@@ -172,21 +187,21 @@ class HackingToolsCollection(object):
         table.add_row("99", f"Back to {parent.TITLE if parent else 'Exit'}")
         console.print(table)
 
-        tool_index = input("\n[?] Choose a tool: ").strip()
         try:
-            tool_index = int(tool_index)
-            if tool_index in range(len(self.TOOLS)):
+            tool_index = IntPrompt.ask("\n[?] Choose a tool", default=99)
+
+            if 0 <= tool_index < len(self.TOOLS):
                 ret_code = self.TOOLS[tool_index].show_options(parent=self)
                 if ret_code != 99:
-                    input("\nPress [Enter] to continue...")
+                    Prompt.ask("\nPress [bold green]Enter[/bold green] to continue")
             elif tool_index == 99:
                 if parent is None:
                     sys.exit()
                 return 99
-        except (TypeError, ValueError):
-            console.print("[red]⚠ Please enter a valid option.[/red]")
-            input("\nPress [Enter] to continue...")
+            else:
+                console.print("[red]⚠ Please enter a valid option.[/red]")
+                Prompt.ask("\nPress [bold green]Enter[/bold green] to continue")
         except Exception:
             console.print_exception(show_locals=True)
-            input("\nPress [Enter] to continue...")
+            Prompt.ask("\nPress [bold green]Enter[/bold green] to continue")
         return self.show_options(parent=parent)

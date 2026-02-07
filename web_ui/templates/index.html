@@ -69,6 +69,35 @@
         .status-dot.running { background: var(--warning); animation: pulse 1s infinite; }
         .status-dot.error { background: var(--error); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Loading Spinner */
+        .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        .spinner-lg { width: 32px; height: 32px; border-width: 3px; }
+
+        /* Skeleton Loader */
+        .skeleton { background: linear-gradient(90deg, var(--card) 25%, #2a2f38 50%, var(--card) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        .skeleton-text { height: 14px; margin-bottom: 8px; }
+        .skeleton-title { height: 20px; width: 60%; margin-bottom: 12px; }
+        .skeleton-card { height: 80px; margin-bottom: 12px; }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 30px; color: #6e7681; }
+        .empty-state .icon { width: 48px; height: 48px; opacity: 0.4; margin-bottom: 16px; }
+        .empty-state h3 { margin: 0 0 8px 0; font-size: 1rem; color: #8b949e; }
+        .empty-state p { margin: 0; font-size: 0.85rem; }
+
+        /* Fade-in Animation for Cards */
+        .card { animation: fadeIn 0.3s ease-out; }
+
+        /* Toast Notifications */
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--sidebar); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 10px; animation: fadeIn 0.3s ease-out; font-size: 0.85rem; }
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--error); }
+        .toast.warning { border-left: 3px solid var(--warning); }
 
         .console-actions { display: flex; gap: 8px; }
         .console-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8b949e; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
@@ -85,9 +114,36 @@
         .console-output .error { color: var(--error); }
         .console-output .info { color: #6e7681; }
 
+        /* Agent Output Styles */
+        .agent-line { padding: 2px 0; }
+        .agent-line.thinking { color: #9b72cb; font-weight: 500; }
+        .agent-line.decision { color: #ffe08a; }
+        .agent-line.executing { color: #4285f4; font-weight: 600; }
+        .agent-line.tool-output { color: #8b949e; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding-left: 20px; border-left: 2px solid #333; margin-left: 8px; }
+        .agent-line.divider { color: #444; font-style: italic; }
+
         .console-input { display: flex; align-items: center; padding: 12px 20px; background: #1a1a1a; border-top: 1px solid var(--border); }
         .console-input span { color: var(--accent); margin-right: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
         .console-input input { flex: 1; background: transparent; border: none; color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; outline: none; }
+
+        /* Intelligence Sidebar */
+        .intel-sidebar { width: 350px; background: var(--sidebar); border-left: 1px solid var(--border); overflow-y: auto; display: none; flex-direction: column; }
+        .intel-header { padding: 20px; border-bottom: 1px solid var(--border); background: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+        .intel-section { padding: 15px 20px; border-bottom: 1px solid var(--border); }
+        .intel-section h4 { margin: 0 0 12px 0; font-size: 0.8rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+        .target-item { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+        .target-item:hover { border-color: var(--accent); }
+        .target-item.active { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+        .target-item .host { font-weight: 600; font-size: 0.9rem; color: white; display: block; }
+        .target-item .stats { font-size: 0.75rem; color: #6e7681; margin-top: 4px; }
+
+        .profile-view { padding: 0; }
+        .intel-pill { display: inline-flex; align-items: center; gap: 5px; background: #30363d; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; margin: 0 5px 5px 0; border: 1px solid transparent; }
+        .intel-pill.vuln-high { border-color: var(--error); color: #ff7b72; }
+        .intel-pill.vuln-med { border-color: var(--warning); color: #d29922; }
+        .intel-pill.port { border-color: var(--success); color: #7ee787; }
+
+        .empty-intel { text-align: center; padding: 40px 20px; color: #6e7681; font-size: 0.9rem; }
 
         /* Tool Config Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 1001; }
@@ -146,11 +202,20 @@
         <div class="header-left">
             <h1 id="pageTitle">Security Tools</h1>
             <p>Select a tool from any category to configure and launch a scan.</p>
+            <div style="margin-top: 15px;">
+                <input type="text" id="toolSearch" placeholder="🔍 Search all tools..."
+                       style="width: 300px; padding: 10px 15px; background: var(--sidebar); border: 1px solid var(--border); color: white; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;"
+                       oninput="filterTools(this.value)">
+            </div>
         </div>
         <div class="header-right">
-            <button class="header-btn" id="toggleConsoleBtn" onclick="toggleConsole()">
-                <svg class="icon"><use href="#icon-terminal"/></svg>
-                Terminal
+            <button class="header-btn" onclick="toggleIntelPanel()">
+                <svg class="icon"><use href="#icon-zap"/></svg>
+                Intelligence Feed
+            </button>
+            <button class="header-btn ai-btn" onclick="openAgentModal()">
+                <svg class="icon"><use href="#icon-brain"/></svg>
+                Auto-Pilot
             </button>
         </div>
     </div>
@@ -199,6 +264,41 @@
     </div>
 </div>
 
+</div>
+
+<!-- Agent Modal -->
+<div class="modal-overlay" id="agentModal">
+    <div class="modal" style="width: 600px;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #a5f3fc; margin-right: 10px;"><use href="#icon-brain"/></svg>
+                <span>AI Auto-Pilot Agent</span>
+            </div>
+            <button class="console-btn" onclick="closeAgentModal()">Close</button>
+        </div>
+
+        <div class="form-group">
+            <label>TARGET IP / URL</label>
+            <input type="text" id="agentTarget" placeholder="e.g., localhost" value="localhost">
+        </div>
+        <div class="form-group">
+            <label>OPERATIONAL GOAL</label>
+            <textarea id="agentGoal" rows="3" style="width: 100%; background: var(--bg); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono';" placeholder="e.g., Scan for open ports and identify web vulnerabilities."></textarea>
+        </div>
+
+        <div id="agentChat" class="console-output" style="height: 200px; background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; padding: 10px;">
+            <div class="info">Agent initialized. Ready for orders.</div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="startAutoPilot()" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #a5f3fc 0%, #4285f4 100%); color: black;">
+                <svg class="icon"><use href="#icon-rocket"/></svg>
+                Launch Auto-Pilot
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Tool Config Modal -->
 <div class="modal-overlay" id="configModal">
     <div class="modal">
@@ -207,6 +307,7 @@
             <label>TARGET URL / IP</label>
             <input type="text" id="targetInput" placeholder="http://host.docker.internal:5000">
         </div>
+        <div id="contextSuggestions" style="margin-bottom: 20px;"></div>
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
             <button class="btn btn-primary" onclick="startScan()">
@@ -293,13 +394,13 @@
         setStatus('ready');
 
         // Fetch output for analysis
-        fetch(`/api/status/${data.job_id}`)
-            .then(r => r.json())
+        safeFetch(`/api/status/${data.job_id}`)
             .then(job => {
                 lastScanOutput = job.output || '';
                 lastScanTool = job.tool || '';
                 lastScanTarget = job.target || '';
-            });
+            })
+            .catch(() => {}); // Silently fail for status fetch
     });
 
     socket.on('scan_error', (data) => {
@@ -308,8 +409,7 @@
     });
 
     // Load tools
-    fetch('/api/tools')
-        .then(r => r.json())
+    safeFetch('/api/tools')
         .then(catalog => {
             currentTools = catalog;
             const categories = Object.keys(catalog);
@@ -345,15 +445,73 @@
         });
     }
 
+    function filterTools(query) {
+        const grid = document.getElementById('toolGrid');
+        grid.innerHTML = '';
+
+        if (!query || query.length < 2) {
+            // Reset to first category if search is cleared
+            const firstCat = Object.keys(currentTools)[0];
+            if (firstCat) loadCategory(firstCat);
+            return;
+        }
+
+        document.getElementById('pageTitle').innerText = `Search: "${query}"`;
+        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+
+        const lowerQuery = query.toLowerCase();
+        let matchCount = 0;
+
+        Object.entries(currentTools).forEach(([category, tools]) => {
+            tools.forEach(tool => {
+                if (tool.toLowerCase().includes(lowerQuery) || category.toLowerCase().includes(lowerQuery)) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `<h3>${tool}</h3><p><small style="color: #8b949e;">${category}</small></p>`;
+                    card.onclick = () => openModal(tool);
+                    grid.appendChild(card);
+                    matchCount++;
+                }
+            });
+        });
+
+        if (matchCount === 0) {
+            grid.innerHTML = '<p style="color: #666; padding: 20px;">No tools found matching your search.</p>';
+        }
+    }
+
     function openModal(toolName) {
         selectedTool = toolName;
         document.getElementById('modalToolName').innerText = toolName;
         document.getElementById('configModal').style.display = 'flex';
+
+        // Context Suggestion logic
+        const target = document.getElementById('targetInput').value;
+        const suggestionDiv = document.getElementById('contextSuggestions');
+        if (target && suggestionDiv) {
+            suggestionDiv.innerHTML = '<div class="spinner"></div> Checking Intel...';
+            safeFetch(`/api/targets/${target}/profile`)
+                .then(profile => {
+                    if (profile) {
+                        let html = '<div style="background: rgba(88,166,255,0.1); padding: 10px; border-radius: 8px; font-size: 0.8rem; border: 1px dashed var(--accent);">';
+                        html += `💡 <b>Intel Found:</b> ${profile.ports.length} ports, ${profile.vulnerabilities.length} vulns.<br>`;
+                        if (profile.technologies.length > 0) {
+                            html += `🛠️ <b>Tech:</b> ${profile.technologies.slice(0, 3).map(t => t.name).join(', ')}`;
+                        }
+                        html += '</div>';
+                        suggestionDiv.innerHTML = html;
+                    } else {
+                        suggestionDiv.innerHTML = '';
+                    }
+                })
+                .catch(() => suggestionDiv.innerHTML = '');
+        }
     }
 
     function closeModal() {
         document.getElementById('configModal').style.display = 'none';
         selectedTool = null;
+        if(document.getElementById('contextSuggestions')) document.getElementById('contextSuggestions').innerHTML = '';
     }
 
     function startScan() {
@@ -367,12 +525,11 @@
         log(`Launching ${selectedTool} against ${target}...`, 'cmd');
         setStatus('running');
 
-        fetch('/api/scan', {
+        safeFetch('/api/scan', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ tool: selectedTool, target: target })
         })
-        .then(r => r.json())
         .then(data => {
             if (data.error) {
                 log(`Error: ${data.message}`, 'error');
@@ -380,7 +537,8 @@
                 return;
             }
             log(`Job started: ${data.job_id}`, 'info');
-        });
+        })
+        .catch(() => setStatus('error'));
     }
 
     // Initial messages
@@ -388,8 +546,7 @@
     log('Ready to scan. Select a tool to begin.', 'info');
 
     // Check Gemini status
-    fetch('/api/gemini-status')
-        .then(r => r.json())
+    safeFetch('/api/gemini-status')
         .then(data => {
             if (data.configured) {
                 log(`Gemini ${data.model} ready for analysis`, 'success');
@@ -412,7 +569,7 @@
         log('Sending output to Gemini 2.5 Pro for analysis...', 'cmd');
         setStatus('running');
 
-        fetch('/api/analyze', {
+        safeFetch('/api/analyze', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -421,7 +578,6 @@
                 target: lastScanTarget
             })
         })
-        .then(r => r.json())
         .then(data => {
             if (data.error) {
                 log(`Analysis Error: ${data.error}`, 'error');
@@ -452,7 +608,203 @@
             setStatus('error');
         });
     }
+
+    // Agent Functions
+    function openAgentModal() {
+        document.getElementById('agentModal').style.display = 'flex';
+    }
+
+    function closeAgentModal() {
+        document.getElementById('agentModal').style.display = 'none';
+    }
+
+    // Agent WebSocket Listeners
+    socket.on('agent_update', (data) => {
+        const chatDiv = document.getElementById('agentChat');
+        const time = new Date().toLocaleTimeString();
+
+        let cssClass = 'info';
+        let prefix = '';
+
+        if (data.type === 'tool_output') {
+            cssClass = 'tool-output';
+            prefix = '  ';
+        } else if (data.type === 'divider') {
+            cssClass = 'divider';
+        } else if (data.message.includes('🧠')) {
+            cssClass = 'thinking';
+        } else if (data.message.includes('💡')) {
+            cssClass = 'decision';
+        } else if (data.message.includes('⚡')) {
+            cssClass = 'executing';
+        } else if (data.message.includes('✅')) {
+            cssClass = 'success';
+        } else if (data.message.includes('❌') || data.message.includes('⚠️')) {
+            cssClass = 'error';
+        }
+
+        chatDiv.innerHTML += `<div class="agent-line ${cssClass}"><span class="timestamp">[${time}]</span> ${prefix}${data.message}</div>`;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+
+    function startAutoPilot() {
+        const target = document.getElementById('agentTarget').value;
+        const goal = document.getElementById('agentGoal').value;
+
+        if (!target || !goal) {
+            alert('Please provide both target and goal!');
+            return;
+        }
+
+        const chatDiv = document.getElementById('agentChat');
+        chatDiv.innerHTML = '<div class="cmd">🚀 Sending mission to AI Agent...</div>';
+
+        safeFetch('/api/autopilot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ target: target, goal: goal })
+        })
+        .then(data => {
+            if(data.error) {
+                chatDiv.innerHTML += `<div class="error">Error: ${data.error}</div>`;
+            } else {
+                chatDiv.innerHTML += `<div class="success">Mission Started! Goal locked.</div>`;
+            }
+        })
+        .catch(() => chatDiv.innerHTML += `<div class="error">Failed to start agent</div>`);
+    }
+
+    // Intelligence Sidebar Logic
+    let intelOpen = false;
+
+    function toggleIntelPanel() {
+        const panel = document.getElementById('intelSidebar');
+        intelOpen = !intelOpen;
+        panel.style.display = intelOpen ? 'flex' : 'none';
+        if (intelOpen) loadTargets();
+    }
+
+    function loadTargets() {
+        const list = document.getElementById('targetList');
+        list.innerHTML = '<div class="spinner"></div> Loading...';
+
+        safeFetch('/api/targets')
+            .then(targets => {
+                if (targets.length === 0) {
+                    list.innerHTML = '<div class="empty-intel">No targets discovered yet.</div>';
+                    return;
+                }
+                list.innerHTML = targets.map(t => `
+                    <div class="target-item" onclick="viewProfile('${t.id}')">
+                        <span class="host">${t.target}</span>
+                        <div class="stats">
+                            🛡️ ${t.vulns_count} Vulns | 🔌 ${t.ports_count} Ports | 🕒 ${new Date(t.last_seen).toLocaleTimeString()}
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(() => list.innerHTML = '<div class="empty-intel">Failed to load targets</div>');
+    }
+
+    function viewProfile(tid) {
+        document.getElementById('targetListSection').style.display = 'none';
+        document.getElementById('profileSection').style.display = 'block';
+        document.getElementById('profileContent').innerHTML = '<div class="spinner"></div> Loading profile...';
+
+        safeFetch(`/api/targets/${tid}/profile`)
+            .then(t => {
+                document.getElementById('profileHost').innerText = t.main_target;
+                document.getElementById('profileId').innerText = t.id;
+
+                let html = `
+                    <div class="intel-section">
+                        <h4>Ports & Services</h4>
+                        <div>${t.ports.length ? t.ports.map(p => `
+                            <div class="intel-pill port">
+                                <b>${p.port}/${p.protocol}</b> ${p.service} ${p.version ? `(${p.version})` : ''}
+                            </div>
+                        `).join('') : '<small>None found</small>'}</div>
+                    </div>
+                    <div class="intel-section">
+                        <h4>Vulnerabilities</h4>
+                        <div>${t.vulnerabilities.length ? t.vulnerabilities.map(v => `
+                            <div class="intel-pill vuln-${v.severity == 'critical' || v.severity == 'high' ? 'high' : 'med'}" title="${v.details}">
+                                <b>${v.severity.toUpperCase()}</b>: ${v.title}
+                            </div>
+                        `).join('') : '<small>No vulnerabilities detected</small>'}</div>
+                    </div>
+                    <div class="intel-section">
+                        <h4>Technologies</h4>
+                        <div>${t.technologies.length ? t.technologies.map(tech => `
+                            <div class="intel-pill">
+                                🛠️ ${tech.name} ${tech.version ? `(${tech.version})` : ''}
+                            </div>
+                        `).join('') : '<small>Unknown</small>'}</div>
+                    </div>
+                    <div class="intel-section">
+                        <h4>History</h4>
+                        <small style="color: #6e7681;">Discovered URLs: ${t.urls.length}</small>
+                    </div>
+                `;
+                document.getElementById('profileContent').innerHTML = html;
+            })
+            .catch(() => document.getElementById('profileContent').innerHTML = '<div class="empty-intel">Failed to load profile</div>');
+    }
+
+    function backToTargets() {
+        document.getElementById('targetListSection').style.display = 'flex';
+        document.getElementById('profileSection').style.display = 'none';
+        loadTargets();
+    }
+
+    // WebSocket refresh on store update
+    socket.on('store_updated', (data) => {
+        if (intelOpen) {
+            loadTargets();
+            // If viewing this target, refresh profile
+            const currentProfileId = document.getElementById('profileId').innerText;
+            if (currentProfileId === data.target_id) viewProfile(data.target_id);
+        }
+        showToast(`Intel gathered: ${data.message}`, 'success');
+    });
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span class="spinner" style="display: none;"></span>${message}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Global error handler for fetch
+    function safeFetch(url, options = {}) {
+        return fetch(url, options)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .catch(err => {
+                showToast(`Network Error: ${err.message}`, 'error');
+                throw err;
+            });
+    }
+
+    // Connection error handling
+    socket.on('connect_error', () => {
+        showToast('Lost connection to server!', 'error');
+        setStatus('error');
+    });
+
+    socket.on('reconnect', () => {
+        showToast('Reconnected to server', 'success');
+        setStatus('ready');
+    });
 </script>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
 
 </body>
 </html>

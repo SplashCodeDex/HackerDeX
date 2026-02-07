@@ -1,10 +1,22 @@
 FROM kalilinux/kali-rolling:latest
 
-# Base packages + Go
+# Base packages + Go + Tools
 RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update && \
-    apt-get install -y git python3-pip figlet sudo golang-go ffuf && \
-    apt-get install -y boxes php curl xdotool wget nmap
+    apt-get install -y --no-install-recommends \
+    git \
+    python3-pip \
+    figlet \
+    sudo \
+    golang-go \
+    ffuf \
+    boxes \
+    php \
+    curl \
+    xdotool \
+    wget \
+    nmap \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set Go environment
 ENV GOPATH=/root/go
@@ -16,9 +28,12 @@ RUN --mount=type=cache,target=/root/go/pkg/mod \
     go install github.com/jaeles-project/gospider@latest
 
 WORKDIR /root/hackingtool
-COPY requirements.txt ./
+
+COPY requirements.txt .
+
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip3 install --break-system-packages boxes flask lolcat requests arjun -r requirements.txt
+    pip3 install --break-system-packages -r requirements.txt
+
 COPY . .
 RUN echo "/root/hackingtool/" > /home/hackingtoolpath.txt
 

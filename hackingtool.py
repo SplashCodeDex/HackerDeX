@@ -2,9 +2,9 @@
 # Version 1.1.0 (rich UI - purple theme)
 import os
 import sys
-import webbrowser
 from platform import system
 from time import sleep
+from typing import List, Tuple
 
 from rich.console import Console
 from rich.panel import Panel
@@ -13,9 +13,7 @@ from rich.prompt import Prompt, IntPrompt, Confirm
 from rich.align import Align
 from rich.text import Text
 from rich import box
-from rich.columns import Columns
 from rich.rule import Rule
-from rich.padding import Padding
 
 from core import HackingToolsCollection
 from tools.anonsurf import AnonSurfTools
@@ -51,7 +49,7 @@ ASCII_LOGO = r"""
                                          ▀                                                                            ▀
 """
 
-tool_definitions = [
+TOOL_DEFINITIONS: List[Tuple[str, str]] = [
     ("Anonymously Hiding Tools", "🛡️"),
     ("Information gathering tools", "🔍"),
     ("Wordlist Generator", "📚"),
@@ -72,7 +70,7 @@ tool_definitions = [
     ("Update or Uninstall | Hackingtool", "♻️"),
 ]
 
-all_tools = [
+ALL_TOOLS: List[HackingToolsCollection] = [
     AnonSurfTools(),
     InformationGatheringTools(),
     WordlistGeneratorTools(),
@@ -93,10 +91,12 @@ all_tools = [
     ToolManager()
 ]
 
+# Alias for backward compatibility (used by app.py)
+all_tools = ALL_TOOLS
 
 class AllTools(HackingToolsCollection):
     TITLE = "All tools"
-    TOOLS = all_tools
+    TOOLS = ALL_TOOLS
 
     def show_info(self):
         header = Text()
@@ -122,7 +122,7 @@ def build_menu():
     table.add_column("idx", width=6, justify="right")
     table.add_column("name", justify="left")
 
-    for idx, (title, icon) in enumerate(tool_definitions):
+    for idx, (title, icon) in enumerate(TOOL_DEFINITIONS):
         if idx == 17:
             label = "[bold magenta]99[/bold magenta]"
             name = f"[bold magenta]{icon} {title}[/bold magenta]"
@@ -152,9 +152,12 @@ def build_menu():
 
 
 def choose_path():
+    """
+    Sets up the installation path for tools.
+    """
     fpath = os.path.expanduser("~/hackingtoolpath.txt")
     if not os.path.exists(fpath):
-        os.system("clear" if system() == "Linux" else "cls")
+        console.clear()
         build_menu()
         console.print(Panel("Setup path for tool installations", border_style="magenta"))
         choice = Prompt.ask("[magenta]Set Path[/magenta]", choices=["1", "2"], default="2")
@@ -180,11 +183,12 @@ def interact_menu():
             if choice == 99:
                 console.print(Panel("[bold white on magenta]Goodbye — Come Back Safely[/bold white on magenta]"))
                 break
-            if 0 <= choice < len(all_tools):
-                tool = all_tools[choice]
-                name = tool_definitions[choice][0]
-                console.print(Panel(f"[bold magenta]{tool_definitions[choice][1]}  Selected:[/bold magenta] [white]{name}"))
+            if 0 <= choice < len(ALL_TOOLS):
+                tool = ALL_TOOLS[choice]
+                name = TOOL_DEFINITIONS[choice][0]
+                console.print(Panel(f"[bold magenta]{TOOL_DEFINITIONS[choice][1]}  Selected:[/bold magenta] [white]{name}"))
                 try:
+                    # Check for show_options method
                     fn = getattr(tool, "show_options", None)
                     if callable(fn):
                         fn()
@@ -192,6 +196,7 @@ def interact_menu():
                         console.print(f"[yellow]Tool '{name}' has no interactive menu (show_options).[/yellow]")
                 except Exception as e:
                     console.print(Panel(f"[red]Error while opening {name}[/red]\n{e}", border_style="red"))
+                
                 if not Confirm.ask("[magenta]Return to main menu?[/magenta]", default=True):
                     console.print(Panel("[bold white on magenta]Exiting...[/bold white on magenta]"))
                     break
@@ -206,6 +211,10 @@ def main():
         # Patch: Bypass Linux check for educational exploration on Windows
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
+        
+        # Optional: Initialize path if needed (currently inactive in original code, but function exists)
+        # choose_path() 
+        
         AllTools().show_info()
         interact_menu()
     except KeyboardInterrupt:
