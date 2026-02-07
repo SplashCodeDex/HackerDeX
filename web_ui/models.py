@@ -38,3 +38,4 @@ class ScanResultModel(BaseModel):
     os_info: Dict[str, str] = {}
     dns_info: Dict[str, List[str]] = {}
     osint_info: Dict[str, List[str]] = {}
+    sessions: List[Dict] = []

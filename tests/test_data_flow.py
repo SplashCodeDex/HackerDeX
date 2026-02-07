@@ -37,8 +37,8 @@ class TestDataFlow(unittest.TestCase):
         parsed = registry.parse_output(result['stdout'], tool_name, target)
         
         # 3. Verify Parsing Results
-        self.assertTrue(any(p['port'] == 80 for p in parsed.get('ports', [])))
-        self.assertTrue(any(p['port'] == 443 for p in parsed.get('ports', [])))
+        self.assertTrue(any(p.port == 80 for p in parsed.ports))
+        self.assertTrue(any(p.port == 443 for p in parsed.ports))
 
     def test_parser_to_store_flow(self):
         target = "127.0.0.1"

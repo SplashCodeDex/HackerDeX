@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HackerDeX Security Lab</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
 
     <!-- Modular CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/console.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/intel.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sessions.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/payloads.css') }}">
 </head>
 <body>
 
@@ -73,6 +75,10 @@
                 <svg class="icon"><use href="#icon-terminal"/></svg>
                 Sessions <span id="sessionCount" style="background: var(--success); color: black; padding: 1px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 5px;">0</span>
             </button>
+            <button class="header-btn" onclick="openPayloadModal()" style="border-color: #f85149; color: #f85149;">
+                <svg class="icon"><use href="#icon-zap"/></svg>
+                Payloads
+            </button>
             <button class="header-btn ai-btn" onclick="openAgentModal()">
                 <svg class="icon"><use href="#icon-brain"/></svg>
                 Auto-Pilot
@@ -107,6 +113,143 @@
             <button class="console-btn" onclick="backToTargets()">← Back</button>
         </div>
         <div id="profileContent" class="profile-view"></div>
+    </div>
+</div>
+
+<!-- Payload Factory Wizard (The Forge) -->
+<div class="modal-overlay" id="payloadModal">
+    <div class="modal payload-modal">
+        <div class="console-header" style="margin: -30px -30px 0 -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #f85149; margin-right: 10px;"><use href="#icon-zap"/></svg>
+                <span>The Forge: Payload Factory</span>
+            </div>
+            <button class="console-btn" onclick="closePayloadModal()">Close</button>
+        </div>
+
+        <div class="payload-wizard">
+            <!-- Sidebar -->
+            <div class="wizard-sidebar">
+                <div class="wizard-step active" id="wizardStep1" onclick="showStep(1)">
+                    <div class="wizard-step-num">1</div>
+                    <span>Template</span>
+                </div>
+                <div class="wizard-step" id="wizardStep2" onclick="showStep(2)">
+                    <div class="wizard-step-num">2</div>
+                    <span>Options</span>
+                </div>
+                <div class="wizard-step" id="wizardStep3" onclick="showStep(3)">
+                    <div class="wizard-step-num">3</div>
+                    <span>Evasion</span>
+                </div>
+                <div class="wizard-step" id="wizardStep4">
+                    <div class="wizard-step-num">4</div>
+                    <span>Deliver</span>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="wizard-content">
+                <!-- Step 1: Template Selection -->
+                <div id="step1" class="step-pane active">
+                    <h3 style="margin-top:0;">Select Payload Template</h3>
+                    <div class="template-grid" id="templateGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Step 2: Configuration -->
+                <div id="step2" class="step-pane">
+                    <h3 style="margin-top:0;">Configure Payload</h3>
+                    <div id="payloadOptionsForm">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #8b949e;">Tradecraft & Evasion</h4>
+                        <label class="checkbox-container" style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
+                            <input type="checkbox" id="optPersistence" style="margin-right: 10px;">
+                            <div>
+                                <div style="font-weight: 600;">Persistence</div>
+                                <div style="font-size: 0.8rem; color: #8b949e;">Auto-start on reboot (Registry/Cron)</div>
+                            </div>
+                        </label>
+                        <label class="checkbox-container" style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="optAntiAnalysis" style="margin-right: 10px;">
+                            <div>
+                                <div style="font-weight: 600;">Anti-Analysis</div>
+                                <div style="font-size: 0.8rem; color: #8b949e;">Detect sandboxes (Uptime, Mouse, CPU)</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" onclick="showStep(3)">Next: Evasion →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Evasion -->
+                <div id="step3" class="step-pane">
+                    <h3 style="margin-top:0;">Evasion & Obfuscation</h3>
+
+                    <div class="evasion-option selected" onclick="selectEvasion('none', this)">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;">None</div>
+                            <div style="font-size:0.8rem; color:#8b949e;">Raw source code. Detectable by AV.</div>
+                        </div>
+                        <span class="evasion-badge badge-none">Basic</span>
+                    </div>
+
+                    <div class="evasion-option" onclick="selectEvasion('weak', this)">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;">Base64 Encoding</div>
+                            <div style="font-size:0.8rem; color:#8b949e;">Standard encoding. Bypasses simple string filters.</div>
+                        </div>
+                        <span class="evasion-badge badge-weak">Weak</span>
+                    </div>
+
+                    <div class="evasion-option" onclick="selectEvasion('strong', this)">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;">Dynamic XOR</div>
+                            <div style="font-size:0.8rem; color:#8b949e;">Random key encryption. Changes signature every time.</div>
+                        </div>
+                        <span class="evasion-badge badge-strong">Strong</span>
+                    </div>
+
+                    <div class="evasion-option" onclick="selectEvasion('ai', this)">
+                        <div style="flex:1;">
+                            <div style="font-weight:600;">AI Polymorphism (Gemini)</div>
+                            <div style="font-size:0.8rem; color:#8b949e;">Rewrites logic flow and variable names.</div>
+                        </div>
+                        <span class="evasion-badge badge-ai">Advanced</span>
+                    </div>
+
+                    <div class="modal-actions">
+                         <button class="btn btn-primary" id="generateBtn" onclick="generatePayload()">
+                            <svg class="icon"><use href="#icon-rocket"/></svg>
+                            Forge Payload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Result -->
+                <div id="step4" class="step-pane">
+                    <h3 style="margin-top:0;">Payload Ready</h3>
+                    <div style="margin-bottom:10px; display:flex; gap:10px;">
+                        <button class="console-btn" onclick="copyPayload()"><svg class="icon"><use href="#icon-copy"/></svg> Copy</button>
+                        <button class="console-btn" onclick="downloadPayloadRaw()"><svg class="icon"><use href="#icon-zap"/></svg> Download</button>
+                        <button class="console-btn" onclick="hostPayload()" style="color:var(--accent); border-color:var(--accent);"><svg class="icon"><use href="#icon-zap"/></svg> Host</button>
+                    </div>
+
+                    <div id="hostUrlResult" style="display:none; margin-bottom:15px; padding:10px; background:rgba(88,166,255,0.1); border-radius:6px; border:1px solid var(--accent);">
+                        <div style="font-size:0.75rem; color:var(--accent); font-weight:600;">HOSTING URL:</div>
+                        <a href="#" id="hostUrl" target="_blank" style="color:white; font-family:'JetBrains Mono';"></a>
+                    </div>
+
+                    <div id="generatedCode" class="code-preview"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -290,11 +433,7 @@
                         </div>
 
                         <h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 0.85rem;">💻 INTERACTIVE TERMINAL</h4>
-                        <div id="sessionTerminal" class="session-terminal">$ Awaiting connection...</div>
-                        <div class="session-terminal-input">
-                            <input type="text" id="terminalInput" placeholder="Enter command..." onkeypress="if(event.key==='Enter') sendSessionCmd()">
-                            <button onclick="sendSessionCmd()">Send</button>
-                        </div>
+                        <div id="sessionTerminal" class="session-terminal" style="height: 300px; padding: 0;"></div>
                     </div>
                 </div>
             </div>
@@ -332,11 +471,14 @@
 
 <!-- Modular JavaScript -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="{{ url_for('static', filename='js/console.js') }}"></script>
 <script src="{{ url_for('static', filename='js/intel.js') }}"></script>
 <script src="{{ url_for('static', filename='js/sessions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/agent.js') }}"></script>
+<script src="{{ url_for('static', filename='js/payloads.js') }}"></script>
 
 </body>
 </html>

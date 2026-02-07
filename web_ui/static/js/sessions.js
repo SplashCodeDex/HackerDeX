@@ -1,10 +1,12 @@
 /**
  * HackerDeX - Sessions Panel JavaScript
- * Handles: C2 sessions, listeners, interactive terminal
+ * Handles: C2 sessions, listeners, interactive terminal (xterm.js)
  */
 
 let selectedSessionId = null;
 let sessionPollInterval = null;
+let term = null;
+let fitAddon = null;
 
 function openSessionsModal() {
     document.getElementById('sessionsModal').style.display = 'flex';
@@ -130,6 +132,49 @@ function stopListener(port) {
         .catch(err => showToast('Network error', 'error'));
 }
 
+function initTerminal() {
+    if (term) return; // Already initialized
+
+    const terminalContainer = document.getElementById('sessionTerminal');
+    terminalContainer.innerHTML = ''; // Clear fallback text
+
+    term = new Terminal({
+        cursorBlink: true,
+        theme: {
+            background: '#0d1117',
+            foreground: '#c9d1d9',
+            cursor: '#58a6ff'
+        },
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 14
+    });
+
+    fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(terminalContainer);
+    fitAddon.fit();
+
+    // Resize observer to auto-fit terminal
+    new ResizeObserver(() => fitAddon.fit()).observe(terminalContainer);
+
+    // Handle input
+    term.onData(data => {
+        if (selectedSessionId) {
+            socket.emit('session_input', {
+                session_id: selectedSessionId,
+                input: data
+            });
+        }
+    });
+
+    // Handle output from server
+    socket.on('session_output', (data) => {
+        if (selectedSessionId && data.session_id === selectedSessionId) {
+            term.write(data.output);
+        }
+    });
+}
+
 function selectSession(sessionId) {
     selectedSessionId = sessionId;
 
@@ -147,8 +192,20 @@ function selectSession(sessionId) {
                 ? `${session.username}:${session.password || '***'}`
                 : (session.cookie ? '[Cookie captured]' : '-');
 
-            document.getElementById('sessionTerminal').textContent = `$ Connected to ${session.target_ip}\n`;
-            pollSessionOutput();
+            // Initialize xterm if needed
+            if (!term) initTerminal();
+
+            term.clear();
+            term.write(`\r\n\x1b[1;32m[*] Connected to session ${sessionId}\x1b[0m\r\n`);
+
+            // Load history
+            safeFetch(`/api/sessions/${sessionId}/output`)
+                .then(data => {
+                    if (data.output) term.write(data.output);
+                });
+
+            fitAddon.fit();
+            term.focus();
         })
         .catch(err => showToast('Failed to load session', 'error'));
 }
@@ -163,53 +220,13 @@ function deleteSelectedSession() {
                 selectedSessionId = null;
                 document.getElementById('noSessionSelected').style.display = 'block';
                 document.getElementById('activeSessionView').style.display = 'none';
+
+                if (term) term.clear();
+
                 refreshSessions();
             })
             .catch(err => showToast('Failed to delete session', 'error'));
     }
-}
-
-function sendSessionCmd() {
-    if (!selectedSessionId) return;
-
-    const input = document.getElementById('terminalInput');
-    const command = input.value.trim();
-    if (!command) return;
-
-    const terminal = document.getElementById('sessionTerminal');
-    terminal.textContent += `$ ${command}\n`;
-    input.value = '';
-
-    safeFetch(`/api/sessions/${selectedSessionId}/command`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command })
-    })
-        .then(data => {
-            if (data.status !== 'sent') {
-                terminal.textContent += `[!] ${data.error}\n`;
-            }
-            setTimeout(pollSessionOutput, 500);
-        })
-        .catch(err => {
-            terminal.textContent += `[!] Network error\n`;
-        });
-
-    terminal.scrollTop = terminal.scrollHeight;
-}
-
-function pollSessionOutput() {
-    if (!selectedSessionId) return;
-
-    safeFetch(`/api/sessions/${selectedSessionId}/output`)
-        .then(data => {
-            if (data.output) {
-                const terminal = document.getElementById('sessionTerminal');
-                terminal.textContent += data.output;
-                terminal.scrollTop = terminal.scrollHeight;
-            }
-        })
-        .catch(() => { });
 }
 
 // Listen for new session detection

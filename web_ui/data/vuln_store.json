@@ -1,46 +1,37 @@
 {
     "targets": {
-        "f528764d624d": {
-            "id": "f528764d624d",
-            "main_target": "127.0.0.1",
+        "5ababd603b22": {
+            "id": "5ababd603b22",
+            "main_target": "example.com",
             "aliases": [
-                "127.0.0.1"
+                "example.com"
             ],
-            "ports": [
-                {
-                    "port": 80,
-                    "protocol": "tcp",
-                    "service": "http",
-                    "version": "",
-                    "last_seen": "2026-02-07T09:34:14.535006"
-                }
-            ],
-            "vulnerabilities": [
-                {
-                    "finding_id": "62beb0fb",
-                    "title": "Test Vuln",
-                    "severity": "High",
-                    "details": "Desc",
-                    "affected_url": "",
-                    "source_tool": "TestTool",
-                    "discovered_at": "2026-02-07T09:34:14.536095"
-                }
-            ],
-            "urls": [
-                "http://127.0.0.1/admin"
-            ],
+            "ports": [],
+            "vulnerabilities": [],
+            "urls": [],
             "technologies": [],
             "os_info": {},
+            "dns_info": {},
+            "osint_info": {
+                "emails": [
+                    "admin@example.com"
+                ],
+                "subdomains": [
+                    "dev.example.com"
+                ]
+            },
+            "risk_score": 0.0,
+            "priority_level": "low",
             "scan_history": [],
-            "last_seen": "2026-02-07T09:34:14.534987"
+            "last_seen": "2026-02-07T11:26:03.774967"
         }
     },
     "alias_index": {
-        "127.0.0.1": "f528764d624d"
+        "example.com": "5ababd603b22"
     },
     "metadata": {
         "created_at": "2026-02-07T09:09:27.939166",
-        "last_modified": "2026-02-07T09:34:14.537113",
-        "total_findings": 2
+        "last_modified": "2026-02-07T11:26:03.774977",
+        "total_findings": 0
     }
 }

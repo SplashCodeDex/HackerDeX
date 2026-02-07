@@ -1,8 +1,9 @@
-# Listener Manager - Multi-protocol listener hub for HackerDeX C2 Core
-# Manages TCP, HTTP, and DNS listeners for catching reverse shells
-
 import socket
 import threading
+import select
+import time
+from typing import Dict, Callable, Optional, List
+from extensions import socketio
 import select
 import time
 from typing import Dict, Callable, Optional, List
@@ -162,7 +163,20 @@ class TCPListener:
                     data = connection.client_socket.recv(4096)
                     if not data:
                         break
+
+                    # Buffer data for history
                     connection.buffer += data
+
+                    # Real-time stream to frontend via SocketIO
+                    if connection.session_id:
+                        try:
+                            decoded = data.decode('utf-8', errors='replace')
+                            socketio.emit('session_output', {
+                                'session_id': connection.session_id,
+                                'output': decoded
+                            })
+                        except Exception as e:
+                            print(f"[-] SocketIO emit error: {e}")
 
                     # Update session last_activity
                     if connection.session_id:

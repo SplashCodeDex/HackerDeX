@@ -3,7 +3,16 @@ import subprocess
 
 from core import HackingTool
 from core import HackingToolsCollection
-from core import validate_input
+from core import HackingToolsCollection
+
+def validate_input(ip, val_range):
+    try:
+        ip = int(ip)
+        if ip in val_range:
+            return ip
+    except:
+        return None
+    return None
 
 from rich.console import Console
 from rich.theme import Theme

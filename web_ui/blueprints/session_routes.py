@@ -92,3 +92,18 @@ def stop_listener(port):
     if listener_mgr.stop_listener(port):
         return jsonify({'status': 'stopped', 'port': port})
     return jsonify({'error': f'No listener on port {port}'}), 404
+
+# ==================== SOCKET.IO HANDLERS ====================
+
+@socketio.on('session_input')
+def handle_session_input(data):
+    """Handle input from the xterm.js terminal."""
+    session_id = data.get('session_id')
+    command = data.get('input')
+
+    if session_id and command:
+        # Send raw input to the session (no newline appended here, client handles it)
+        # However, for convenience with xterm, we might want to just send distinct commands or chars.
+        # For a true raw shell, we send characters. For this implementation, we'll send robust commands.
+        # Let's check if the command ends with \r (Enter key from xterm)
+        listener_mgr.send_to_session(session_id, command)

@@ -5,7 +5,7 @@
 
 ## CLI Frameworks
 - **Rich:** Used for creating a sophisticated, high-performance terminal UI with advanced formatting, tables, and interactive prompts.
-- **Subprocess Orchestration:** The core mechanism for interacting with the 55+ external security tools, utilizing `subprocess.run` and `Popen` for thread-safe, asynchronous execution capable of handling diverse tool behaviors.
+- **ToolExecutor (Subprocess Orchestration):** A central execution engine that standardizes how all 55+ external security tools are launched, using `subprocess` for thread-safe, asynchronous execution with real-time output capture.
 
 ## Web Stack
 - **Flask:** The primary web framework for serving the management UI and API.
