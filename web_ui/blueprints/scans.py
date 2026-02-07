@@ -91,6 +91,8 @@ TOOL_COMMANDS = {
     "ffuf": "ffuf -u {target}/FUZZ -w /usr/share/wordlists/dirb/common.txt",
     "WhatWeb": "whatweb {target}",
     "nikto": "nikto -h {target} -Format xml -o -",
+    "theHarvester": "theHarvester -d {target} -b all",
+    "TheHarvester": "theHarvester -d {target} -b all",
 }
 
 def run_tool_with_streaming(job_id, command):
@@ -118,17 +120,29 @@ def run_tool_with_streaming(job_id, command):
             parsed = registry.parse_output(full_output, tool_name, target)
 
             # Update Store
-            for p in parsed.get('ports', []):
-                store.add_port(tid, p['port'], p['protocol'], p['service'], p['version'])
+            for p in parsed.ports:
+                store.add_port(tid, p.port, p.protocol, p.service, p.version)
 
-            for v in parsed.get('vulns', []):
-                store.add_vulnerability(tid, v['title'], v['severity'], v['details'], v['url'], tool_name)
+            for v in parsed.vulns:
+                store.add_vulnerability(
+                    tid, v.title, v.severity, v.details, v.affected_url, tool_name,
+                    source_layer=v.source_layer,
+                    privilege_level=v.privilege_level,
+                    strategic_advantage=v.strategic_advantage,
+                    confidence=v.confidence
+                )
 
-            for url in parsed.get('urls', []):
+            for url in parsed.urls:
                 store.add_url(tid, url, tool="Generic" if "nmap" not in tool_name.lower() else tool_name)
 
-            for tech in parsed.get('technologies', []):
-                store.add_technology(tid, tech['name'], tech['version'])
+            for tech in parsed.technologies:
+                store.add_technology(tid, tech.name, tech.version)
+
+            if parsed.dns_info:
+                store.update_dns_info(tid, parsed.dns_info)
+
+            if parsed.osint_info:
+                store.update_osint_info(tid, parsed.osint_info)
 
             socketio.emit('store_updated', {'target_id': tid, 'message': f'Intel updated from {tool_name}'})
 
