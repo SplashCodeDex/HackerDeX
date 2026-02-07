@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerDeX Security Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Modular CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/console.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/intel.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sessions.css') }}">
+</head>
+<body>
+
+<!-- SVG Icon Definitions -->
+<svg style="display: none;">
+    <defs>
+        <symbol id="icon-terminal" viewBox="0 0 24 24">
+            <path d="M4 17l6-5-6-5m8 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-zap" viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+        </symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24">
+            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-copy" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-brain" viewBox="0 0 24 24">
+            <path d="M12 4.5a2.5 2.5 0 00-4.96-.46 2.5 2.5 0 00-1.98 3 2.5 2.5 0 00-1.32 4.24 3 3 0 00.34 5.58 2.5 2.5 0 002.96 3.08A2.5 2.5 0 0012 19.5a2.5 2.5 0 004.96.44 2.5 2.5 0 002.96-3.08 3 3 0 00.34-5.58 2.5 2.5 0 00-1.32-4.24 2.5 2.5 0 00-1.98-3A2.5 2.5 0 0012 4.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M12 4.5v15M9 7l4.5 4.5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="icon-rocket" viewBox="0 0 24 24">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09zM12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+    </defs>
+</svg>
+
+<div class="sidebar">
+    <div class="brand">
+        <svg class="icon icon-lg"><use href="#icon-zap"/></svg>
+        HackerDeX Lab
+    </div>
+    <ul class="category-list" id="categoryList"></ul>
+</div>
+
+<div class="main">
+    <div class="header">
+        <div class="header-left">
+            <h1 id="pageTitle">Security Tools</h1>
+            <p>Select a tool from any category to configure and launch a scan.</p>
+            <div style="margin-top: 15px;">
+                <input type="text" id="toolSearch" placeholder="🔍 Search all tools..."
+                       style="width: 300px; padding: 10px 15px; background: var(--sidebar); border: 1px solid var(--border); color: white; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;"
+                       oninput="filterTools(this.value)">
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="header-btn" id="toggleConsoleBtn" onclick="toggleConsole()">
+                <svg class="icon"><use href="#icon-terminal"/></svg>
+                Console
+            </button>
+            <button class="header-btn" onclick="toggleIntelPanel()">
+                <svg class="icon"><use href="#icon-zap"/></svg>
+                Intelligence Feed
+            </button>
+            <button class="header-btn" onclick="openSessionsModal()" style="border-color: var(--success); color: var(--success);">
+                <svg class="icon"><use href="#icon-terminal"/></svg>
+                Sessions <span id="sessionCount" style="background: var(--success); color: black; padding: 1px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 5px;">0</span>
+            </button>
+            <button class="header-btn ai-btn" onclick="openAgentModal()">
+                <svg class="icon"><use href="#icon-brain"/></svg>
+                Auto-Pilot
+            </button>
+            <button class="header-btn" onclick="generateReport()" style="border-color: var(--warning); color: var(--warning);">
+                <svg class="icon"><use href="#icon-zap"/></svg>
+                Gen Report
+            </button>
+        </div>
+    </div>
+
+    <div class="tools-panel">
+        <div class="tool-grid" id="toolGrid"></div>
+    </div>
+</div>
+
+<!-- Intelligence Sidebar -->
+<div class="intel-sidebar" id="intelSidebar">
+    <div class="intel-header">
+        <h3 style="margin: 0; font-size: 1rem;">🎯 Target Intel</h3>
+        <button class="console-btn" onclick="toggleIntelPanel()">Close</button>
+    </div>
+    <div id="targetListSection" style="display: flex; flex-direction: column; flex: 1; overflow-y: auto;">
+        <div id="targetList" class="intel-section"></div>
+    </div>
+    <div id="profileSection" style="display: none; flex: 1; overflow-y: auto;">
+        <div class="intel-header" style="flex-shrink: 0;">
+            <div>
+                <div id="profileHost" style="font-weight: 600; color: white;">-</div>
+                <small id="profileId" style="color: #6e7681;">-</small>
+            </div>
+            <button class="console-btn" onclick="backToTargets()">← Back</button>
+        </div>
+        <div id="profileContent" class="profile-view"></div>
+    </div>
+</div>
+
+<!-- Console Modal -->
+<div class="console-overlay" id="consoleOverlay" onclick="closeConsoleOnBackdrop(event)">
+    <div class="console-modal" onclick="event.stopPropagation()">
+        <div class="console-header">
+            <div class="console-title">
+                <div class="console-dots">
+                    <div class="console-dot red" onclick="toggleConsole()"></div>
+                    <div class="console-dot yellow"></div>
+                    <div class="console-dot green"></div>
+                </div>
+                <span>Terminal — HackerDeX</span>
+            </div>
+            <div class="console-status">
+                <div class="status-dot ready" id="statusDot"></div>
+                <span id="statusText">Ready</span>
+            </div>
+            <div class="console-actions">
+                <button class="console-btn" onclick="clearConsole()">
+                    <svg class="icon"><use href="#icon-trash"/></svg>
+                    Clear
+                </button>
+                <button class="console-btn" onclick="copyOutput()">
+                    <svg class="icon"><use href="#icon-copy"/></svg>
+                    Copy
+                </button>
+                <button class="console-btn ai-btn" onclick="analyzeWithGemini()">
+                    <svg class="icon"><use href="#icon-brain"/></svg>
+                    Analyze
+                </button>
+            </div>
+        </div>
+        <div class="console-output" id="consoleOutput"></div>
+        <div class="console-input">
+            <span>$</span>
+            <input type="text" placeholder="Select a tool to run a scan..." disabled>
+        </div>
+    </div>
+</div>
+
+<!-- Agent Modal -->
+<div class="modal-overlay" id="agentModal">
+    <div class="modal" style="width: 600px;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #a5f3fc; margin-right: 10px;"><use href="#icon-brain"/></svg>
+                <span>AI Auto-Pilot Agent</span>
+            </div>
+            <button class="console-btn" onclick="closeAgentModal()">Close</button>
+        </div>
+
+        <div class="form-group">
+            <label>TARGET IP / URL</label>
+            <input type="text" id="agentTarget" placeholder="e.g., localhost" value="localhost">
+        </div>
+        <div class="form-group">
+            <label>OPERATIONAL GOAL</label>
+            <textarea id="agentGoal" rows="3" style="width: 100%; background: var(--bg); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono';" placeholder="e.g., Scan for open ports and identify web vulnerabilities."></textarea>
+        </div>
+
+        <div id="agentChat" class="chat-container">
+            <div class="chat-bubble agent">Agent initialized. Ready for orders.<span class="chat-timestamp">Now</span></div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="startAutoPilot()" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #a5f3fc 0%, #4285f4 100%); color: black;">
+                <svg class="icon"><use href="#icon-rocket"/></svg>
+                Launch Auto-Pilot
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal-overlay" id="reportModal">
+    <div class="modal" style="width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #d29922; margin-right: 10px;"><use href="#icon-zap"/></svg>
+                <span>Engagement Report</span>
+            </div>
+            <button class="console-btn" onclick="closeReportModal()">Close</button>
+        </div>
+        <div id="reportContent" class="console-output" style="flex: 1; min-height: 400px; background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 20px; font-family: 'Inter', sans-serif;">
+            <div class="spinner"></div> Generating Professional Report...
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="copyReport()" style="background: var(--warning); color: black;">
+                <svg class="icon"><use href="#icon-copy"/></svg> Copy Markdown
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Exploit Modal -->
+<div class="modal-overlay" id="exploitModal">
+    <div class="modal" style="width: 700px; display: flex; flex-direction: column;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #f85149; margin-right: 10px;"><use href="#icon-zap"/></svg>
+                <span>Generated Exploit PoC</span>
+            </div>
+            <button class="console-btn" onclick="closeExploitModal()">Close</button>
+        </div>
+        <div id="exploitCode" class="console-output" style="height: 300px; background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 15px; font-family: 'JetBrains Mono'; color: #7ee787;">
+            <div class="spinner"></div> Generating Python PoC...
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="copyExploit()" style="background: var(--error); color: white;">
+                <svg class="icon"><use href="#icon-copy"/></svg> Copy Code
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Sessions Modal -->
+<div class="modal-overlay" id="sessionsModal">
+    <div class="modal" style="width: 900px; height: 80vh; display: flex; flex-direction: column;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: var(--success); margin-right: 10px;"><use href="#icon-terminal"/></svg>
+                <span>C2 Sessions & Listeners</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="console-btn" onclick="refreshSessions()" style="color: var(--success);">↻ Refresh</button>
+                <button class="console-btn" onclick="closeSessionsModal()">Close</button>
+            </div>
+        </div>
+
+        <div style="display: flex; flex: 1; gap: 20px; overflow: hidden;">
+            <!-- Left: Listeners + Session List -->
+            <div style="width: 320px; display: flex; flex-direction: column; overflow: hidden;">
+                <!-- Listeners Section -->
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; color: var(--accent); font-size: 0.85rem;">📡 LISTENERS</h4>
+                        <button class="console-btn" onclick="showNewListenerForm()" style="font-size: 0.7rem;">+ New</button>
+                    </div>
+                    <div id="newListenerForm" style="display: none; background: var(--card); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                        <input type="number" id="listenerPort" placeholder="Port (e.g. 4444)" style="width: 100%; padding: 8px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 4px; margin-bottom: 8px;">
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="startNewListener()" style="flex: 1; background: var(--success); border: none; color: black; padding: 6px; border-radius: 4px; cursor: pointer;">Start TCP</button>
+                            <button onclick="hideNewListenerForm()" style="background: var(--border); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Cancel</button>
+                        </div>
+                    </div>
+                    <div id="listenersList" style="max-height: 120px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Sessions List -->
+                <div style="flex: 1; overflow-y: auto;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 0.85rem;">🔓 SESSIONS</h4>
+                    <div id="sessionsList"></div>
+                </div>
+            </div>
+
+            <!-- Right: Session Details / Terminal -->
+            <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                <div id="sessionDetails" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="empty-intel" id="noSessionSelected">
+                        <svg class="icon" style="width: 48px; height: 48px; opacity: 0.4;"><use href="#icon-terminal"/></svg>
+                        <h3>No Session Selected</h3>
+                        <p>Select a session from the list to view details and interact.</p>
+                    </div>
+
+                    <div id="activeSessionView" style="display: none; flex: 1; flex-direction: column;">
+                        <div style="background: var(--card); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span id="detailType" class="session-type">SHELL</span>
+                                    <span id="detailStatus" class="session-status active">ACTIVE</span>
+                                </div>
+                                <button onclick="deleteSelectedSession()" style="background: rgba(248,81,73,0.2); color: var(--error); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">☠ Kill</button>
+                            </div>
+                            <div style="margin-top: 10px; font-size: 0.85rem;">
+                                <div><strong>Target:</strong> <span id="detailTarget">-</span></div>
+                                <div><strong>Source:</strong> <span id="detailSource">-</span></div>
+                                <div><strong>Credentials:</strong> <span id="detailCreds">-</span></div>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 0 0 10px 0; color: var(--accent); font-size: 0.85rem;">💻 INTERACTIVE TERMINAL</h4>
+                        <div id="sessionTerminal" class="session-terminal">$ Awaiting connection...</div>
+                        <div class="session-terminal-input">
+                            <input type="text" id="terminalInput" placeholder="Enter command..." onkeypress="if(event.key==='Enter') sendSessionCmd()">
+                            <button onclick="sendSessionCmd()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Summary Footer -->
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.8rem; color: #8b949e;">
+            <span>Total: <strong id="summaryTotal">0</strong> | Active: <strong id="summaryActive" style="color: var(--success);">0</strong> | Pending: <strong id="summaryPending" style="color: var(--warning);">0</strong></span>
+            <span>Listeners: <strong id="summaryListeners">0</strong></span>
+        </div>
+    </div>
+</div>
+
+<!-- Tool Config Modal -->
+<div class="modal-overlay" id="configModal">
+    <div class="modal">
+        <h2 id="modalToolName">Tool Name</h2>
+        <div class="form-group">
+            <label>TARGET URL / IP</label>
+            <input type="text" id="targetInput" placeholder="http://host.docker.internal:5000">
+        </div>
+        <div id="contextSuggestions" style="margin-bottom: 20px;"></div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="startScan()">
+                <svg class="icon"><use href="#icon-rocket"/></svg>
+                Launch Scan
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Modular JavaScript -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/console.js') }}"></script>
+<script src="{{ url_for('static', filename='js/intel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sessions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/agent.js') }}"></script>
+
+</body>
+</html>

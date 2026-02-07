@@ -1,0 +1,53 @@
+/* HackerDeX Console Styles - Terminal & Tool Output */
+
+/* Console Modal */
+.console-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); z-index: 1000; }
+.console-modal { background: #0a0a0a; width: 80%; max-width: 900px; height: 70%; max-height: 600px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
+.console-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border-bottom: 1px solid var(--border); }
+.console-title { display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 600; }
+.console-dots { display: flex; gap: 8px; }
+.console-dot { width: 12px; height: 12px; border-radius: 50%; }
+.console-dot.red { background: #ff5f56; cursor: pointer; }
+.console-dot.red:hover { opacity: 0.8; }
+.console-dot.yellow { background: #ffbd2e; }
+.console-dot.green { background: #27c93f; }
+.console-status { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #8b949e; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+.status-dot.ready { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.status-dot.running { background: var(--warning); animation: pulse 1s infinite; }
+.status-dot.error { background: var(--error); }
+
+.console-actions { display: flex; gap: 8px; }
+.console-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8b949e; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+.console-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+.console-btn.ai-btn { background: linear-gradient(135deg, #4285f4 0%, #9b72cb 100%); color: white; border: none; }
+.console-btn.ai-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+.console-output { flex: 1; padding: 20px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+.console-output .line { padding: 3px 0; }
+.console-output .timestamp { color: #444; margin-right: 12px; }
+.console-output .cmd { color: var(--accent); font-weight: 600; }
+.console-output .success { color: var(--success); }
+.console-output .warning { color: var(--warning); }
+.console-output .error { color: var(--error); }
+.console-output .info { color: #6e7681; }
+
+.console-input { display: flex; align-items: center; padding: 12px 20px; background: #1a1a1a; border-top: 1px solid var(--border); }
+.console-input span { color: var(--accent); margin-right: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.console-input input { flex: 1; background: transparent; border: none; color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; outline: none; }
+
+/* Agent Output Styles */
+.agent-line { padding: 2px 0; }
+.agent-line.thinking { color: #9b72cb; font-weight: 500; }
+.agent-line.decision { color: #ffe08a; }
+.agent-line.executing { color: #4285f4; font-weight: 600; }
+.agent-line.tool-output { color: #8b949e; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding-left: 20px; border-left: 2px solid #333; margin-left: 8px; }
+.agent-line.divider { color: #444; font-style: italic; }
+
+/* Agent Chat Interface */
+.chat-container { display: flex; flex-direction: column; height: 350px; overflow-y: auto; padding: 15px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 20px; }
+.chat-bubble { padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; font-size: 0.9rem; max-width: 85%; word-wrap: break-word; position: relative; animation: fadeIn 0.3s ease-out; }
+.chat-bubble.user { background: #1f6feb; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+.chat-bubble.agent { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; align-self: flex-start; border-bottom-left-radius: 2px; }
+.chat-timestamp { font-size: 0.7rem; color: #8b949e; margin-top: 4px; display: block; }
+.tool-output-block { background: #000; font-family: 'JetBrains Mono'; font-size: 0.8rem; padding: 10px; border-radius: 6px; margin-top: 5px; white-space: pre-wrap; color: #7ee787; border: 1px solid #333; overflow-x: auto; }

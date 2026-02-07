@@ -51,4 +51,4 @@
     - [x] Sub-task: Remove unused `os.system` calls and legacy execution helpers
     - [x] Sub-task: Final integration test pass
 
-- [ ] Task: Conductor - User Manual Verification 'Full Suite Migration & Cleanup' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Full Suite Migration & Cleanup' (Protocol in workflow.md)

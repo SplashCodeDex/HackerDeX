@@ -12,7 +12,7 @@
                     "protocol": "tcp",
                     "service": "http",
                     "version": "",
-                    "last_seen": "2026-02-07T09:14:44.492835"
+                    "last_seen": "2026-02-07T09:34:14.535006"
                 }
             ],
             "vulnerabilities": [
@@ -23,7 +23,7 @@
                     "details": "Desc",
                     "affected_url": "",
                     "source_tool": "TestTool",
-                    "discovered_at": "2026-02-07T09:14:44.494221"
+                    "discovered_at": "2026-02-07T09:34:14.536095"
                 }
             ],
             "urls": [
@@ -32,7 +32,7 @@
             "technologies": [],
             "os_info": {},
             "scan_history": [],
-            "last_seen": "2026-02-07T09:14:44.492811"
+            "last_seen": "2026-02-07T09:34:14.534987"
         }
     },
     "alias_index": {
@@ -40,7 +40,7 @@
     },
     "metadata": {
         "created_at": "2026-02-07T09:09:27.939166",
-        "last_modified": "2026-02-07T09:14:44.495550",
+        "last_modified": "2026-02-07T09:34:14.537113",
         "total_findings": 2
     }
 }

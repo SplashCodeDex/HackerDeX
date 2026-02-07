@@ -1,0 +1,20 @@
+/* HackerDeX Intel Sidebar Styles */
+
+.intel-sidebar { width: 350px; background: var(--sidebar); border-left: 1px solid var(--border); overflow-y: auto; display: none; flex-direction: column; }
+.intel-header { padding: 20px; border-bottom: 1px solid var(--border); background: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+.intel-section { padding: 15px 20px; border-bottom: 1px solid var(--border); }
+.intel-section h4 { margin: 0 0 12px 0; font-size: 0.8rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+
+.target-item { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+.target-item:hover { border-color: var(--accent); }
+.target-item.active { border-color: var(--accent); background: rgba(88,166,255,0.05); }
+.target-item .host { font-weight: 600; font-size: 0.9rem; color: white; display: block; }
+.target-item .stats { font-size: 0.75rem; color: #6e7681; margin-top: 4px; }
+
+.profile-view { padding: 0; }
+.intel-pill { display: inline-flex; align-items: center; gap: 5px; background: #30363d; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; margin: 0 5px 5px 0; border: 1px solid transparent; }
+.intel-pill.vuln-high { border-color: var(--error); color: #ff7b72; }
+.intel-pill.vuln-med { border-color: var(--warning); color: #d29922; }
+.intel-pill.port { border-color: var(--success); color: #7ee787; }
+
+.empty-intel { text-align: center; padding: 40px 20px; color: #6e7681; font-size: 0.9rem; }
