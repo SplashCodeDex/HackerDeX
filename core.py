@@ -45,6 +45,7 @@ class HackingTool(object):
     PROJECT_URL: str = ""
 
     def __init__(self, options: Optional[List[Tuple[str, Callable]]] = None, installable: bool = True, runnable: bool = True):
+        self.executor = ToolExecutor()
         options = options or []
         if isinstance(options, list):
             self.OPTIONS = []
@@ -107,11 +108,12 @@ class HackingTool(object):
         if isinstance(self.INSTALL_COMMANDS, (list, tuple)):
             for command in self.INSTALL_COMMANDS:
                 console.print(f"[yellow]→ {command}[/yellow]")
-                try:
-                    subprocess.run(command, shell=True, check=True)
-                except subprocess.CalledProcessError as e:
+                result = self.executor.run_blocking(command)
+                if result['returncode'] != 0:
                     console.print(f"[bold red]✘ Command failed: {command}[/bold red]")
-                    console.print(f"[red]Error: {e}[/red]")
+                    console.print(f"[red]Exit Code: {result['returncode']}[/red]")
+                    if result['stderr']:
+                        console.print(f"[red]Error: {result['stderr']}[/red]")
                     return
             self.after_install()
 
@@ -126,11 +128,10 @@ class HackingTool(object):
             if isinstance(self.UNINSTALL_COMMANDS, (list, tuple)):
                 for command in self.UNINSTALL_COMMANDS:
                     console.print(f"[red]→ {command}[/red]")
-                    try:
-                        subprocess.run(command, shell=True, check=True)
-                    except subprocess.CalledProcessError as e:
+                    result = self.executor.run_blocking(command)
+                    if result['returncode'] != 0:
                         console.print(f"[bold red]✘ Command failed: {command}[/bold red]")
-                        console.print(f"[red]Error: {e}[/red]")
+                        console.print(f"[red]Exit Code: {result['returncode']}[/red]")
                         return
             self.after_uninstall()
 
@@ -143,11 +144,7 @@ class HackingTool(object):
         if isinstance(self.RUN_COMMANDS, (list, tuple)):
             for command in self.RUN_COMMANDS:
                 console.print(f"[cyan]⚙ Running:[/cyan] [bold]{command}[/bold]")
-                try:
-                    subprocess.run(command, shell=True, check=True)
-                except subprocess.CalledProcessError as e:
-                    console.print(f"[bold red]✘ Command failed: {command}[/bold red]")
-                    console.print(f"[red]Error: {e}[/red]")
+                self.executor.run_blocking(command)
             self.after_run()
 
     def after_run(self): pass
