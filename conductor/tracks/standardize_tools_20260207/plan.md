@@ -21,10 +21,10 @@
     - [x] Sub-task: Refactor `tools/information_gathering_tools.py` to use the new execution method
     - [x] Sub-task: Verify output streaming for these tools
 
-- [ ] Task: Migrate SQL Injection Tools
-    - [ ] Sub-task: Write tests for SQLMap wrapper
-    - [ ] Sub-task: Refactor `tools/sql_tools.py`
-    - [ ] Sub-task: Verify output parsing for SQLMap
+- [x] Task: Migrate SQL Injection Tools [373e619]
+    - [x] Sub-task: Write tests for SQLMap wrapper
+    - [x] Sub-task: Refactor `tools/sql_tools.py` to use the new execution method
+    - [x] Sub-task: Verify output parsing for SQLMap
 
 - [ ] Task: Conductor - User Manual Verification 'Tool Migration (Batch 1 - High Priority)' (Protocol in workflow.md)
 
