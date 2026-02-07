@@ -4,11 +4,12 @@ import threading
 from datetime import datetime
 import hashlib
 from .prioritizer import Prioritizer
+from .correlator import Correlator
 from .models import VulnerabilityModel
 
 class VulnStore:
     _instance = None
-    _lock = threading.Lock()
+    _lock = threading.RLock()
 
     def __new__(cls):
         with cls._lock:
@@ -30,8 +31,9 @@ class VulnStore:
             "last_modified": datetime.now().isoformat(),
             "total_findings": 0
         }
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.prioritizer = Prioritizer()
+        self.correlator = Correlator(self)
         self.load_from_disk()
         self._initialized = True
 
@@ -162,6 +164,10 @@ class VulnStore:
 
     def _update_metadata(self):
         self.metadata["last_modified"] = datetime.now().isoformat()
+        
+        # Run correlation logic
+        self.correlator.correlate_all()
+        
         # count total findings and update risk scores
         total = 0
         for t in self.targets.values():

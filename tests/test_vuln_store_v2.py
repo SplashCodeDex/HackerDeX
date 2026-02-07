@@ -95,5 +95,15 @@ class TestVulnStoreV2(unittest.TestCase):
         self.assertEqual(profile['risk_score'], 25.0)
         self.assertEqual(profile['priority_level'], "critical")
 
+    def test_cross_layer_correlation(self):
+        # OSINT find IP for domain
+        domain = "app.test.com"
+        tid = self.store.get_or_create_target(domain)
+        self.store.update_osint_info(tid, {"ips": ["10.0.0.1"]})
+        
+        # Verify IP became an alias
+        self.assertIn("10.0.0.1", self.store.alias_index)
+        self.assertEqual(self.store.alias_index["10.0.0.1"], tid)
+
 if __name__ == '__main__':
     unittest.main()
