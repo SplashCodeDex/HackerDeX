@@ -1,0 +1,46 @@
+{
+    "targets": {
+        "f528764d624d": {
+            "id": "f528764d624d",
+            "main_target": "127.0.0.1",
+            "aliases": [
+                "127.0.0.1"
+            ],
+            "ports": [
+                {
+                    "port": 80,
+                    "protocol": "tcp",
+                    "service": "http",
+                    "version": "",
+                    "last_seen": "2026-02-07T09:14:44.492835"
+                }
+            ],
+            "vulnerabilities": [
+                {
+                    "finding_id": "62beb0fb",
+                    "title": "Test Vuln",
+                    "severity": "High",
+                    "details": "Desc",
+                    "affected_url": "",
+                    "source_tool": "TestTool",
+                    "discovered_at": "2026-02-07T09:14:44.494221"
+                }
+            ],
+            "urls": [
+                "http://127.0.0.1/admin"
+            ],
+            "technologies": [],
+            "os_info": {},
+            "scan_history": [],
+            "last_seen": "2026-02-07T09:14:44.492811"
+        }
+    },
+    "alias_index": {
+        "127.0.0.1": "f528764d624d"
+    },
+    "metadata": {
+        "created_at": "2026-02-07T09:09:27.939166",
+        "last_modified": "2026-02-07T09:14:44.495550",
+        "total_findings": 2
+    }
+}

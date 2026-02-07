@@ -39,7 +39,7 @@
     - [x] Sub-task: Create test cases with sample output for Nmap, SQLMap, and Nikto
     - [x] Sub-task: Validate that `parsers/` correctly extract data from the new captured output format
 
-- [ ] Task: Conductor - User Manual Verification 'Parser & VulnStore Integration' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Parser & VulnStore Integration' (Protocol in workflow.md)
 
 ## Phase 4: Full Suite Migration & Cleanup
 
