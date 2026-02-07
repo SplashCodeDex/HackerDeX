@@ -161,6 +161,52 @@ class HackingTool(object):
         webbrowser.open_new_tab(self.PROJECT_URL)
 
 
+class ToolExecutor:
+    """
+    Standardized tool execution engine for HackerDeX.
+    Supports both blocking and asynchronous (streaming) execution.
+    """
+
+    def run_blocking(self, command: str) -> dict:
+        """
+        Executes a command and waits for it to complete.
+        Returns a dictionary with stdout, stderr, and returncode.
+        """
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        stdout, stderr = process.communicate()
+        return {
+            "stdout": stdout,
+            "stderr": stderr,
+            "returncode": process.returncode
+        }
+
+    def run_async(self, command: str):
+        """
+        Executes a command and yields output lines in real-time.
+        Useful for live streaming to UI.
+        """
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
+        )
+
+        for line in iter(process.stdout.readline, ''):
+            if line:
+                yield line
+
+        process.wait()
+
+
 class HackingToolsCollection(object):
     TITLE: str = ""
     DESCRIPTION: str = ""
