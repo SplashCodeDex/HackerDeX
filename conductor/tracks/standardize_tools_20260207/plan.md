@@ -2,10 +2,10 @@
 
 ## Phase 1: Core Execution Engine Refactor
 
-- [ ] Task: Create `ToolExecutor` class
-    - [ ] Sub-task: Write tests for `ToolExecutor` (mocking subprocess)
-    - [ ] Sub-task: Implement `ToolExecutor` with `run_async` and `run_blocking` methods using `subprocess`
-    - [ ] Sub-task: Implement real-time output capture (yielding lines)
+- [x] Task: Create `ToolExecutor` class [8a1014e]
+    - [x] Sub-task: Write tests for `ToolExecutor` (mocking subprocess)
+    - [x] Sub-task: Implement `ToolExecutor` with `run_async` and `run_blocking` methods using `subprocess`
+    - [x] Sub-task: Implement real-time output capture (yielding lines)
 
 - [ ] Task: Update `HackingTool` Base Class
     - [ ] Sub-task: Write tests ensuring `HackingTool` uses `ToolExecutor`
