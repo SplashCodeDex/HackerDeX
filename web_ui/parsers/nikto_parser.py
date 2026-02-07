@@ -79,7 +79,6 @@ class NiktoParser(BaseParser):
         return findings
 
     def _parse_text_fallback(self, raw_output, findings, target):
-        return super().parse(raw_output, "nikto", target)  # Not actually calling super, but implementing regex fallback logic here if needed
         # Re-implement regex fallback for safety
         vuln_pattern = re.compile(r'^\s*\+\s*(OSVDB-\d+)?:?\s*(.+)', re.MULTILINE)
         for line in raw_output.splitlines():
