@@ -14,7 +14,7 @@ from .nuclei_parser import NucleiParser
 from .wpscan_parser import WPScanParser
 from .burp_parser import BurpSuiteParser
 from .generic_parser import GenericParser
-from ..models import ScanResultModel, PortModel, VulnerabilityModel, TechnologyModel
+from models import ScanResultModel, PortModel, VulnerabilityModel, TechnologyModel
 
 class ParserRegistry:
     def __init__(self):

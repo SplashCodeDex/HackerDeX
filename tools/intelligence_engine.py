@@ -3,10 +3,11 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt
-from web_ui.vuln_store import VulnStore
-from web_ui.attack_pather import AttackPather
-from web_ui.next_best_action import NextBestActionEngine
-from managers import get_gemini_client
+from vuln_store import VulnStore
+from attack_pather import AttackPather
+from next_best_action import NextBestActionEngine
+from gemini_config import get_gemini_client
+from time import sleep
 
 console = Console()
 PURPLE_STYLE = "bold magenta"
@@ -41,8 +42,7 @@ class ViewPrioritizedTargets(HackingTool):
             )
         
         console.print(table)
-        Prompt.ask("
-Press Enter to return")
+        Prompt.ask("\nPress Enter to return")
 
 class ViewPrioritizedVulns(HackingTool):
     TITLE = "View Prioritized Vulnerabilities"
@@ -74,8 +74,7 @@ class ViewPrioritizedVulns(HackingTool):
             )
         
         console.print(table)
-        Prompt.ask("
-Press Enter to return")
+        Prompt.ask("\nPress Enter to return")
 
 class AIAttackPathAnalysis(HackingTool):
     TITLE = "AI Attack Path Analysis"
@@ -94,16 +93,14 @@ class AIAttackPathAnalysis(HackingTool):
         clear_screen()
         if not self.pather:
             console.print("[red]Error: Gemini API client not initialized. Check GEMINI_API_KEY.[/red]")
-            Prompt.ask("
-Press Enter to return")
+            Prompt.ask("\nPress Enter to return")
             return
 
         with console.status("[bold green]Analyzing attack surface with Gemini..."):
             analysis = self.pather.analyze_attack_paths()
         
         console.print(Panel(analysis, title="AI Strategic Attack Path Analysis", border_style="magenta"))
-        Prompt.ask("
-Press Enter to return")
+        Prompt.ask("\nPress Enter to return")
 
 class AINextBestAction(HackingTool):
     TITLE = "AI Next Best Action Suggestion"
@@ -122,8 +119,7 @@ class AINextBestAction(HackingTool):
         clear_screen()
         if not self.engine:
             console.print("[red]Error: Gemini API client not initialized.[/red]")
-            Prompt.ask("
-Press Enter to return")
+            Prompt.ask("\nPress Enter to return")
             return
 
         target = Prompt.ask("Enter Target (Domain/IP)")
@@ -136,18 +132,14 @@ Press Enter to return")
             console.print(f"[red]Error: {suggestion.get('reason')}[/red]")
         else:
             console.print(Panel(
-                f"[bold cyan]Suggested Tool:[/bold cyan] {suggestion['tool']}
-"
-                f"[bold cyan]Reason:[/bold cyan] {suggestion['reason']}
-"
-                f"[bold yellow]Recommended Command:[/bold yellow]
-{suggestion['command']}",
+                f"[bold cyan]Suggested Tool:[/bold cyan] {suggestion['tool']}\n"
+                f"[bold cyan]Reason:[/bold cyan] {suggestion['reason']}\n"
+                f"[bold yellow]Recommended Command:[/bold yellow]\n{suggestion['command']}",
                 title=f"AI Next Action: {target}",
                 border_style="green"
             ))
         
-        Prompt.ask("
-Press Enter to return")
+        Prompt.ask("\nPress Enter to return")
 
 class IntelligenceEngineTools(HackingToolsCollection):
     TITLE = "Robust Intelligence Engine"
@@ -162,8 +154,7 @@ class IntelligenceEngineTools(HackingToolsCollection):
     def show_options(self, parent=None):
         clear_screen()
         console.print(Panel.fit(
-            f"[{PURPLE_STYLE}]Robust Intelligence Engine — Tactical Dashboard[/{PURPLE_STYLE}]
-"
+            f"[{PURPLE_STYLE}]Robust Intelligence Engine — Tactical Dashboard[/{PURPLE_STYLE}]\n"
             "Leverage cross-tool correlation and AI to prioritize your attack surface.",
             border_style="magenta"
         ))

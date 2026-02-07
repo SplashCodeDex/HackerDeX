@@ -1,6 +1,6 @@
 from typing import List, Set, TYPE_CHECKING
 if TYPE_CHECKING:
-    from .vuln_store import VulnStore
+    from vuln_store import VulnStore
 
 class Correlator:
     """

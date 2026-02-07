@@ -2,6 +2,10 @@
 # Version 1.1.0 (rich UI - purple theme)
 import os
 import sys
+
+# Add web_ui to path for intelligence modules
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web_ui'))
+
 from platform import system
 from time import sleep
 from typing import List, Tuple
@@ -16,25 +20,7 @@ from rich import box
 from rich.rule import Rule
 
 from core import HackingToolsCollection
-from tools.anonsurf import AnonSurfTools
-from tools.ddos import DDOSTools
-from tools.exploit_frameworks import ExploitFrameworkTools
-from tools.forensic_tools import ForensicTools
-from tools.information_gathering_tools import InformationGatheringTools
-from tools.other_tools import OtherTools
-from tools.payload_creator import PayloadCreatorTools
-from tools.phising_attack import PhishingAttackTools
-from tools.post_exploitation import PostExploitationTools
-from tools.remote_administration import RemoteAdministrationTools
-from tools.reverse_engineering import ReverseEngineeringTools
-from tools.sql_tools import SqlInjectionTools
-from tools.steganography import SteganographyTools
-from tools.tool_manager import ToolManager
-from tools.intelligence_engine import IntelligenceEngineTools
-from tools.webattack import WebAttackTools
-from tools.wireless_attack_tools import WirelessAttackTools
-from tools.wordlist_generator import WordlistGeneratorTools
-from tools.xss_attack import XSSAttackTools
+from hackingtool_definitions import TOOL_DEFINITIONS, ALL_TOOLS
 
 console = Console()
 
@@ -50,51 +36,7 @@ ASCII_LOGO = r"""
                                          ▀                                                                            ▀
 """
 
-TOOL_DEFINITIONS: List[Tuple[str, str]] = [
-    ("Anonymously Hiding Tools", "🛡️"),
-    ("Information gathering tools", "🔍"),
-    ("Wordlist Generator", "📚"),
-    ("Wireless attack tools", "📶"),
-    ("SQL Injection Tools", "🧩"),
-    ("Phishing attack tools", "🎣"),
-    ("Web Attack tools", "🌐"),
-    ("Post exploitation tools", "🔧"),
-    ("Forensic tools", "🕵️"),
-    ("Payload creation tools", "📦"),
-    ("Exploit framework", "🧰"),
-    ("Reverse engineering tools", "🔁"),
-    ("DDOS Attack Tools", "⚡"),
-    ("Remote Administrator Tools (RAT)", "🖥️"),
-    ("XSS Attack Tools", "💥"),
-    ("Steganograhy tools", "🖼️"),
-    ("Other tools", "✨"),
-    ("Robust Intelligence Engine", "🧠"),
-    ("Update or Uninstall | Hackingtool", "♻️"),
-]
-
-ALL_TOOLS: List[HackingToolsCollection] = [
-    AnonSurfTools(),
-    InformationGatheringTools(),
-    WordlistGeneratorTools(),
-    WirelessAttackTools(),
-    SqlInjectionTools(),
-    PhishingAttackTools(),
-    WebAttackTools(),
-    PostExploitationTools(),
-    ForensicTools(),
-    PayloadCreatorTools(),
-    ExploitFrameworkTools(),
-    ReverseEngineeringTools(),
-    DDOSTools(),
-    RemoteAdministrationTools(),
-    XSSAttackTools(),
-    SteganographyTools(),
-    OtherTools(),
-    IntelligenceEngineTools(),
-    ToolManager()
-]
-
-# Alias for backward compatibility (used by app.py)
+# Alias for backward compatibility
 all_tools = ALL_TOOLS
 
 class AllTools(HackingToolsCollection):
@@ -126,7 +68,7 @@ def build_menu():
     table.add_column("name", justify="left")
 
     for idx, (title, icon) in enumerate(TOOL_DEFINITIONS):
-        if idx == 17:
+        if idx == 18:
             label = "[bold magenta]99[/bold magenta]"
             name = f"[bold magenta]{icon} {title}[/bold magenta]"
         else:

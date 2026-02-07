@@ -1,5 +1,5 @@
 import re
-from .models import VulnerabilityModel
+from models import VulnerabilityModel
 
 class Deduper:
     """

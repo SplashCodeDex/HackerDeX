@@ -1,4 +1,4 @@
-from .vuln_store import VulnStore
+from vuln_store import VulnStore
 import shlex
 
 class ContextInjector:

@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from .vuln_store import VulnStore
+from vuln_store import VulnStore
 
 class NextBestActionEngine:
     """

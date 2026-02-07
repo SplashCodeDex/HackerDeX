@@ -3,10 +3,10 @@ import os
 import threading
 from datetime import datetime
 import hashlib
-from .prioritizer import Prioritizer
-from .correlator import Correlator
-from .deduper import Deduper
-from .models import VulnerabilityModel
+from prioritizer import Prioritizer
+from correlator import Correlator
+from deduper import Deduper
+from models import VulnerabilityModel
 
 class VulnStore:
     _instance = None

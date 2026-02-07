@@ -1,5 +1,5 @@
 from typing import List
-from .models import VulnerabilityModel
+from models import VulnerabilityModel
 
 class Prioritizer:
     """

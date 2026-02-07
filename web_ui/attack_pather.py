@@ -1,5 +1,5 @@
 from typing import List, Dict
-from .vuln_store import VulnStore
+from vuln_store import VulnStore
 
 class AttackPather:
     """
