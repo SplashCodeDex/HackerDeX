@@ -12,7 +12,7 @@
     - [x] Sub-task: Refactor `core.py` to integrate `ToolExecutor` into the base `HackingTool` class
     - [x] Sub-task: Deprecate `os.system` usage in the base class
 
-- [ ] Task: Conductor - User Manual Verification 'Core Execution Engine Refactor' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Core Execution Engine Refactor' (Protocol in workflow.md)
 
 ## Phase 2: Tool Migration (Batch 1 - High Priority)
 

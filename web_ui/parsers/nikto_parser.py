@@ -14,85 +14,82 @@ class NiktoParser(BaseParser):
             "os_info": {}
         }
 
-        # Severity mapping for known OSVDB and common issues
-        severity_keywords = {
-            'critical': ['rce', 'remote code', 'command execution', 'backdoor', 'upload'],
-            'high': ['xss', 'cross-site', 'injection', 'traversal', 'lfi', 'rfi', 'sql'],
-            'medium': ['directory listing', 'information disclosure', 'phpinfo', 'debug']
-        }
-
+        # Severity mapping logic
         def get_severity(text: str) -> str:
             text_lower = text.lower()
-            for sev, keywords in severity_keywords.items():
-                if any(kw in text_lower for kw in keywords):
-                    return sev
-            return 'low'  # Default to low if no keywords match
+            if any(k in text_lower for k in ['rce', 'execution', 'admin', 'sql', 'injection']):
+                return 'critical'
+            if any(k in text_lower for k in ['xss', 'traversal', 'config', 'sensitive']):
+                return 'high'
+            if any(k in text_lower for k in ['phpinfo', 'listing', 'disclosure']):
+                return 'medium'
+            return 'low'
 
-        # Nikto output patterns
-        # + OSVDB-3092: /admin/: This might be interesting...
-        # + /crossdomain.xml: Flash app allows any domain access
+        try:
+            # Check for XML signature
+            if not raw_output.strip().startswith('<?xml') and not raw_output.strip().startswith('<niktoscan'):
+                return self._parse_text_fallback(raw_output, findings, target)
+
+            import xml.etree.ElementTree as ET
+            # Fix potential multi-root issues if multiple scans concatenated (naive fix)
+            if raw_output.count('<niktoscan>') > 1:
+                raw_output = raw_output.split('</niktoscan>')[0] + '</niktoscan>'
+
+            root = ET.fromstring(raw_output)
+
+            # Additional header info
+            scandetails = root.find('scandetails')
+            if scandetails is not None:
+                site_ip = scandetails.get('targetip')
+                site_host = scandetails.get('targethostname')
+                port = scandetails.get('targetport')
+                banner = scandetails.get('sitebanner')
+
+                if banner:
+                    findings['technologies'].append({
+                        "name": "Web Server",
+                        "version": banner[:50]
+                    })
+
+                # Iterate findings
+                for item in scandetails.findall('item'):
+                    osvdb = item.get('osvdbid')
+                    method = item.get('method')
+                    uri = item.find('uri').text if item.find('uri') is not None else ""
+                    description = item.find('description').text if item.find('description') is not None else ""
+                    namelink = item.find('namelink').text if item.find('namelink') is not None else ""
+
+                    full_desc = f"{description} (Method: {method})"
+                    severity = get_severity(full_desc)
+
+                    findings['vulns'].append({
+                        "title": f"Nikto: {osvdb}" if osvdb and osvdb != "0" else "Nikto Finding",
+                        "severity": severity,
+                        "details": full_desc[:200],
+                        "url": f"{target}{uri}"
+                    })
+
+                    if uri and uri != '/':
+                         findings['urls'].append(f"{target}{uri}")
+
+        except Exception as e:
+            print(f"Nikto XML Parsing failed: {e}. Falling back to text.")
+            return self._parse_text_fallback(raw_output, findings, target)
+
+        return findings
+
+    def _parse_text_fallback(self, raw_output, findings, target):
+        return super().parse(raw_output, "nikto", target)  # Not actually calling super, but implementing regex fallback logic here if needed
+        # Re-implement regex fallback for safety
         vuln_pattern = re.compile(r'^\s*\+\s*(OSVDB-\d+)?:?\s*(.+)', re.MULTILINE)
-
-        # Server detection
-        server_pattern = re.compile(r'Server:\s*(.+)', re.IGNORECASE)
-
-        # Target IP detection
-        target_ip_pattern = re.compile(r'Target IP:\s*([0-9.]+)')
-
-        # Scan timestamp
         for line in raw_output.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-
-            # Server detection
-            server_match = server_pattern.search(line)
-            if server_match:
-                server = server_match.group(1).strip()
-                # Parse server string (e.g., "Apache/2.4.41 (Ubuntu)")
-                parts = server.split('/')
-                name = parts[0] if parts else server
-                version = parts[1].split()[0] if len(parts) > 1 else ""
-                findings["technologies"].append({
-                    "name": name,
-                    "version": version
-                })
-                continue
-
-            # Vulnerability/finding detection
             vuln_match = vuln_pattern.search(line)
             if vuln_match:
-                osvdb = vuln_match.group(1) or ""
                 details = vuln_match.group(2).strip()
-
-                # Skip scan metadata lines
-                if any(skip in details.lower() for skip in ['start:', 'end:', 'host:', 'target']):
-                    continue
-
-                # Extract URL if present
-                url_match = re.search(r'(/[^\s:]+)', details)
-                if url_match:
-                    found_url = url_match.group(1)
-                    findings["urls"].append(f"{target}{found_url}")
-
-                severity = get_severity(details)
-                title = osvdb if osvdb else "Nikto Finding"
-
                 findings["vulns"].append({
-                    "title": title,
-                    "severity": severity,
+                    "title": "Nikto Finding (Text Fallback)",
+                    "severity": "medium",
                     "details": details[:200],
                     "url": target
                 })
-
-            # X-Powered-By detection
-            if 'x-powered-by' in line.lower():
-                powered_match = re.search(r'X-Powered-By:\s*(.+)', line, re.IGNORECASE)
-                if powered_match:
-                    tech = powered_match.group(1).strip()
-                    findings["technologies"].append({
-                        "name": tech.split('/')[0],
-                        "version": tech.split('/')[1] if '/' in tech else ""
-                    })
-
         return findings

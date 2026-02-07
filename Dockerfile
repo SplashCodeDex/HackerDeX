@@ -16,6 +16,9 @@ RUN --mount=type=cache,target=/var/cache/apt \
     xdotool \
     wget \
     nmap \
+    proxychains4 \
+    tor \
+    ssh \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Go environment

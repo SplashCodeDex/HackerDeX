@@ -122,6 +122,14 @@
         .agent-line.tool-output { color: #8b949e; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding-left: 20px; border-left: 2px solid #333; margin-left: 8px; }
         .agent-line.divider { color: #444; font-style: italic; }
 
+        /* Agent Chat Interface */
+        .chat-container { display: flex; flex-direction: column; height: 350px; overflow-y: auto; padding: 15px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 20px; }
+        .chat-bubble { padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; font-size: 0.9rem; max-width: 85%; word-wrap: break-word; position: relative; animation: fadeIn 0.3s ease-out; }
+        .chat-bubble.user { background: #1f6feb; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-bubble.agent { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .chat-timestamp { font-size: 0.7rem; color: #8b949e; margin-top: 4px; display: block; }
+        .tool-output-block { background: #000; font-family: 'JetBrains Mono'; font-size: 0.8rem; padding: 10px; border-radius: 6px; margin-top: 5px; white-space: pre-wrap; color: #7ee787; border: 1px solid #333; overflow-x: auto; }
+
         .console-input { display: flex; align-items: center; padding: 12px 20px; background: #1a1a1a; border-top: 1px solid var(--border); }
         .console-input span { color: var(--accent); margin-right: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
         .console-input input { flex: 1; background: transparent; border: none; color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; outline: none; }
@@ -217,6 +225,10 @@
                 <svg class="icon"><use href="#icon-brain"/></svg>
                 Auto-Pilot
             </button>
+            <button class="header-btn" onclick="generateReport()" style="border-color: var(--warning); color: var(--warning);">
+                <svg class="icon"><use href="#icon-zap"/></svg>
+                Gen Report
+            </button>
         </div>
     </div>
 
@@ -286,14 +298,56 @@
             <textarea id="agentGoal" rows="3" style="width: 100%; background: var(--bg); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono';" placeholder="e.g., Scan for open ports and identify web vulnerabilities."></textarea>
         </div>
 
-        <div id="agentChat" class="console-output" style="height: 200px; background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; padding: 10px;">
-            <div class="info">Agent initialized. Ready for orders.</div>
+        <div id="agentChat" class="chat-container">
+            <div class="chat-bubble agent">Agent initialized. Ready for orders.<span class="chat-timestamp">Now</span></div>
         </div>
 
         <div class="modal-actions">
             <button class="btn btn-primary" onclick="startAutoPilot()" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #a5f3fc 0%, #4285f4 100%); color: black;">
                 <svg class="icon"><use href="#icon-rocket"/></svg>
                 Launch Auto-Pilot
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal-overlay" id="reportModal">
+    <div class="modal" style="width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #d29922; margin-right: 10px;"><use href="#icon-zap"/></svg>
+                <span>Engagement Report</span>
+            </div>
+            <button class="console-btn" onclick="closeReportModal()">Close</button>
+        </div>
+        <div id="reportContent" class="console-output" style="flex: 1; min-height: 400px; background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 20px; font-family: 'Inter', sans-serif;">
+            <div class="spinner"></div> Generating Professional Report...
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="copyReport()" style="background: var(--warning); color: black;">
+                <svg class="icon"><use href="#icon-copy"/></svg> Copy Markdown
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Exploit Modal -->
+<div class="modal-overlay" id="exploitModal">
+    <div class="modal" style="width: 700px; display: flex; flex-direction: column;">
+        <div class="console-header" style="margin: -30px -30px 20px -30px; padding: 20px; border-bottom: 1px solid #333; border-radius: 16px 16px 0 0;">
+            <div class="console-title">
+                <svg class="icon" style="color: #f85149; margin-right: 10px;"><use href="#icon-zap"/></svg>
+                <span>Generated Exploit PoC</span>
+            </div>
+            <button class="console-btn" onclick="closeExploitModal()">Close</button>
+        </div>
+        <div id="exploitCode" class="console-output" style="height: 300px; background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 15px; font-family: 'JetBrains Mono'; color: #7ee787;">
+            <div class="spinner"></div> Generating Python PoC...
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="copyExploit()" style="background: var(--error); color: white;">
+                <svg class="icon"><use href="#icon-copy"/></svg> Copy Code
             </button>
         </div>
     </div>
@@ -621,29 +675,29 @@
     // Agent WebSocket Listeners
     socket.on('agent_update', (data) => {
         const chatDiv = document.getElementById('agentChat');
-        const time = new Date().toLocaleTimeString();
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        let cssClass = 'info';
-        let prefix = '';
+        let content = data.message;
 
         if (data.type === 'tool_output') {
-            cssClass = 'tool-output';
-            prefix = '  ';
-        } else if (data.type === 'divider') {
-            cssClass = 'divider';
-        } else if (data.message.includes('🧠')) {
-            cssClass = 'thinking';
-        } else if (data.message.includes('💡')) {
-            cssClass = 'decision';
-        } else if (data.message.includes('⚡')) {
-            cssClass = 'executing';
-        } else if (data.message.includes('✅')) {
-            cssClass = 'success';
-        } else if (data.message.includes('❌') || data.message.includes('⚠️')) {
-            cssClass = 'error';
+             content = `<div class="tool-output-block">${content}</div>`;
+        } else if (content.includes('🧠')) {
+             content = `<span style="color: #9b72cb;">${content}</span>`;
+        } else if (content.includes('💡')) {
+             content = `<span style="color: #ffe08a;">${content}</span>`;
+        } else if (content.includes('⚡')) {
+             content = `<span style="color: #4285f4; font-weight: 600;">${content}</span>`;
+        } else if (content.includes('✅')) {
+             content = `<span style="color: var(--success); font-weight: 600;">${content}</span>`;
+        } else if (content.includes('❌') || content.includes('⚠️')) {
+             content = `<span style="color: var(--error); font-weight: 600;">${content}</span>`;
         }
 
-        chatDiv.innerHTML += `<div class="agent-line ${cssClass}"><span class="timestamp">[${time}]</span> ${prefix}${data.message}</div>`;
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble agent';
+        bubble.innerHTML = `${content}<span class="chat-timestamp">${time}</span>`;
+
+        chatDiv.appendChild(bubble);
         chatDiv.scrollTop = chatDiv.scrollHeight;
     });
 
@@ -657,7 +711,12 @@
         }
 
         const chatDiv = document.getElementById('agentChat');
-        chatDiv.innerHTML = '<div class="cmd">🚀 Sending mission to AI Agent...</div>';
+        chatDiv.innerHTML = '<div class="info" style="text-align: center; color: #666; margin-bottom: 20px;">--- New Mission Started ---</div>';
+
+        const userBubble = document.createElement('div');
+        userBubble.className = 'chat-bubble user';
+        userBubble.innerHTML = `<b>Target:</b> ${target}<br><b>Goal:</b> ${goal}<span class="chat-timestamp">Now</span>`;
+        chatDiv.appendChild(userBubble);
 
         safeFetch('/api/autopilot', {
             method: 'POST',
@@ -665,13 +724,24 @@
             body: JSON.stringify({ target: target, goal: goal })
         })
         .then(data => {
-            if(data.error) {
-                chatDiv.innerHTML += `<div class="error">Error: ${data.error}</div>`;
+            if (data.error) {
+                const errBubble = document.createElement('div');
+                errBubble.className = 'chat-bubble agent';
+                errBubble.innerHTML = `<span style="color: var(--error);">Error: ${data.error}</span><span class="chat-timestamp">Now</span>`;
+                chatDiv.appendChild(errBubble);
             } else {
-                chatDiv.innerHTML += `<div class="success">Mission Started! Goal locked.</div>`;
+                const okBubble = document.createElement('div');
+                okBubble.className = 'chat-bubble agent';
+                okBubble.innerHTML = `Mission started and goal locked. Reasoning engine engaged.<span class="chat-timestamp">Now</span>`;
+                chatDiv.appendChild(okBubble);
             }
         })
-        .catch(() => chatDiv.innerHTML += `<div class="error">Failed to start agent</div>`);
+        .catch(() => {
+            const errBubble = document.createElement('div');
+            errBubble.className = 'chat-bubble agent';
+            errBubble.innerHTML = `<span style="color: var(--error);">Failed to connect to agent backend.</span><span class="chat-timestamp">Now</span>`;
+            chatDiv.appendChild(errBubble);
+        });
     }
 
     // Intelligence Sidebar Logic
@@ -728,8 +798,9 @@
                     <div class="intel-section">
                         <h4>Vulnerabilities</h4>
                         <div>${t.vulnerabilities.length ? t.vulnerabilities.map(v => `
-                            <div class="intel-pill vuln-${v.severity == 'critical' || v.severity == 'high' ? 'high' : 'med'}" title="${v.details}">
-                                <b>${v.severity.toUpperCase()}</b>: ${v.title}
+                            <div class="intel-pill vuln-${v.severity == 'critical' || v.severity == 'high' ? 'high' : 'med'}" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span title="${v.details}"><b>${v.severity.toUpperCase()}</b>: ${v.title}</span>
+                                <button onclick="generateExploit('${v.title.replace(/'/g, "\\'")}', '${t.main_target}')" style="background: transparent; border: none; cursor: pointer; color: inherit; padding: 0 4px;" title="Generate AI Exploit">⚡</button>
                             </div>
                         `).join('') : '<small>No vulnerabilities detected</small>'}</div>
                     </div>
@@ -749,6 +820,44 @@
                 document.getElementById('profileContent').innerHTML = html;
             })
             .catch(() => document.getElementById('profileContent').innerHTML = '<div class="empty-intel">Failed to load profile</div>');
+    }
+
+    // Exploit Generation
+    function generateExploit(vulnTitle, target) {
+        document.getElementById('exploitModal').style.display = 'flex';
+        const codeBlock = document.getElementById('exploitCode');
+        codeBlock.innerText = 'Generating exploit code...';
+
+        showToast(`Generating exploit for: ${vulnTitle}`, 'info');
+
+        safeFetch('/api/generate_exploit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ vuln: vulnTitle, target: target })
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                codeBlock.innerText = data.code;
+                showToast('Exploit generated successfully!', 'success');
+            } else {
+                codeBlock.innerText = `Error: ${data.error}`;
+                showToast('Failed to generate exploit', 'error');
+            }
+        })
+        .catch(err => {
+            codeBlock.innerText = `Network Error: ${err.message}`;
+        });
+    }
+
+    function closeExploitModal() {
+        document.getElementById('exploitModal').style.display = 'none';
+    }
+
+    function copyExploit() {
+        const text = document.getElementById('exploitCode').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Exploit code copied!', 'success');
+        });
     }
 
     function backToTargets() {
@@ -801,6 +910,37 @@
         showToast('Reconnected to server', 'success');
         setStatus('ready');
     });
+
+    // Report Generation Functions
+    function generateReport() {
+        document.getElementById('reportModal').style.display = 'flex';
+        const contentDiv = document.getElementById('reportContent');
+        contentDiv.innerHTML = '<div class="spinner"></div> Generating Professional Report...';
+
+        safeFetch('/api/generate_report', { method: 'POST' })
+            .then(data => {
+                if (data.status === 'success') {
+                    contentDiv.innerText = data.report; // Display raw markdown for now
+                    showToast('Report generated successfully!', 'success');
+                } else {
+                    contentDiv.innerHTML = `<div class="error">Failed to generate report: ${data.error}</div>`;
+                }
+            })
+            .catch(err => {
+                contentDiv.innerHTML = `<div class="error">Network Error: ${err.message}</div>`;
+            });
+    }
+
+    function closeReportModal() {
+        document.getElementById('reportModal').style.display = 'none';
+    }
+
+    function copyReport() {
+        const text = document.getElementById('reportContent').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Report copied to clipboard!', 'success');
+        });
+    }
 </script>
 
 <!-- Toast Container -->

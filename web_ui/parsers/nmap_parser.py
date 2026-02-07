@@ -14,93 +14,92 @@ class NmapParser(BaseParser):
             "os_info": {}
         }
 
-        # Standard Nmap port line: 80/tcp open  http  Apache httpd 2.4.41
-        # Also handles: 22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol 2.0)
-        port_pattern = re.compile(r'(\d+)/(tcp|udp)\s+(open|filtered)\s+([^\s]+)\s*(.*)', re.IGNORECASE)
+        try:
+            # Check if output is actually XML (sometimes nmap fails and prints text)
+            if not raw_output.strip().startswith('<?xml') and not raw_output.strip().startswith('<nmaprun'):
+                # Fallback to simple text parsing or return partial
+                return self._parse_text_fallback(raw_output, findings)
 
-        # Host up detection
-        host_up_pattern = re.compile(r'Host is up \(([0-9.]+)s latency\)')
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(raw_output)
 
-        # OS detection patterns
-        os_patterns = [
-            re.compile(r'OS details:\s*(.+)', re.IGNORECASE),
-            re.compile(r'Running:\s*(.+)', re.IGNORECASE),
-            re.compile(r'Aggressive OS guesses:\s*(.+)', re.IGNORECASE),
-        ]
-
-        # NSE script vulnerability patterns
-        vuln_patterns = [
-            re.compile(r'VULNERABLE', re.IGNORECASE),
-            re.compile(r'CVE-\d{4}-\d+', re.IGNORECASE),
-            re.compile(r'(ssl-heartbleed|smb-vuln|http-vuln)', re.IGNORECASE),
-        ]
-
-        current_script = None
-
-        for line in raw_output.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-
-            # Port detection
-            match = port_pattern.search(line)
-            if match:
-                port = int(match.group(1))
-                proto = match.group(2)
-                state = match.group(3)
-                service = match.group(4)
-                version = match.group(5).strip()
-
-                # Only add open ports
-                if state.lower() == 'open':
-                    findings["ports"].append({
-                        "port": port,
-                        "protocol": proto,
-                        "service": service,
-                        "version": version
-                    })
-
-                    # Extract technology from version string
-                    if version:
-                        # Parse version string for common tech (Apache, nginx, OpenSSH, etc.)
-                        tech_match = re.match(r'([A-Za-z]+(?:\s+[A-Za-z]+)?)\s+([0-9.]+)', version)
-                        if tech_match:
-                            findings["technologies"].append({
-                                "name": tech_match.group(1),
-                                "version": tech_match.group(2)
-                            })
-                        else:
-                            findings["technologies"].append({
-                                "name": service.capitalize(),
-                                "version": version[:50]  # Truncate long versions
-                            })
-
-            # OS detection
-            for os_pat in os_patterns:
-                os_match = os_pat.search(line)
+            for host in root.findall('host'):
+                # OS Detection
+                os_match = host.find('os/osmatch')
                 if os_match:
-                    findings["os_info"]["name"] = os_match.group(1).strip()[:100]
-                    break
+                    findings['os_info']['name'] = os_match.get('name')
+                    findings['os_info']['accuracy'] = os_match.get('accuracy')
 
-            # Vulnerability detection from NSE scripts
-            for vuln_pat in vuln_patterns:
-                if vuln_pat.search(line):
-                    # Extract CVE if present
-                    cve_match = re.search(r'(CVE-\d{4}-\d+)', line)
-                    title = cve_match.group(1) if cve_match else "NSE Vulnerability Detected"
+                # Port Scanning
+                ports = host.find('ports')
+                if ports:
+                    for port in ports.findall('port'):
+                        state = port.find('state')
+                        if state is not None and state.get('state') == 'open':
+                            port_id = int(port.get('portid'))
+                            protocol = port.get('protocol')
 
-                    findings["vulns"].append({
-                        "title": title,
-                        "severity": "high",
-                        "details": line[:200],
-                        "url": target
-                    })
-                    break
+                            service = port.find('service')
+                            service_name = "unknown"
+                            version = ""
 
-            # HTTP title extraction for web servers
-            if '|_http-title:' in line:
-                title = line.split('|_http-title:')[1].strip()
-                if title and 'Did not follow redirect' not in title:
-                    findings["urls"].append(f"http://{target}/ - {title[:50]}")
+                            if service is not None:
+                                service_name = service.get('name', 'unknown')
+                                product = service.get('product', '')
+                                version = service.get('version', '')
+                                extrainfo = service.get('extrainfo', '')
+                                full_version = f"{product} {version} {extrainfo}".strip()
 
+                                # Tech detection
+                                if product:
+                                    findings['technologies'].append({
+                                        'name': product,
+                                        'version': version,
+                                        'type': service_name
+                                    })
+                            else:
+                                full_version = ""
+
+                            findings['ports'].append({
+                                "port": port_id,
+                                "protocol": protocol,
+                                "service": service_name,
+                                "version": full_version
+                            })
+
+                            # Script Outputs (vulns, http-title)
+                            for script in port.findall('script'):
+                                script_id = script.get('id')
+                                output = script.get('output')
+
+                                if script_id == 'http-title':
+                                    title = output.strip()
+                                    findings['urls'].append(f"http://{target}:{port_id}/ - {title}")
+
+                                if 'vuln' in script_id or 'exploit' in script_id:
+                                    findings['vulns'].append({
+                                        "title": f"Nmap NSE: {script_id}",
+                                        "severity": "high",
+                                        "details": output,
+                                        "url": f"{target}:{port_id}"
+                                    })
+
+        except Exception as e:
+            print(f"XML Parsing failed: {e}. Falling back to text.")
+            return self._parse_text_fallback(raw_output, findings)
+
+        return findings
+
+    def _parse_text_fallback(self, raw_output, findings):
+        # Quick fallback for non-XML output
+        port_pattern = re.compile(r'(\d+)/(tcp|udp)\s+(open|filtered)\s+([^\s]+)\s*(.*)', re.IGNORECASE)
+        for line in raw_output.splitlines():
+            match = port_pattern.search(line)
+            if match and match.group(3) == 'open':
+                findings['ports'].append({
+                    "port": int(match.group(1)),
+                    "protocol": match.group(2),
+                    "service": match.group(4),
+                    "version": match.group(5).strip()
+                })
         return findings

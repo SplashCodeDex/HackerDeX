@@ -60,6 +60,10 @@ SAFETY_SETTINGS = {
     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
 }
 
+# Stealth Mode Configuration
+PROXY_MODE = os.environ.get('PROXY_MODE', 'false').lower() == 'true'
+PROXY_CMD_PREFIX = "proxychains4 -f /root/hackingtool/proxychains.conf " if PROXY_MODE else ""
+
 def get_gemini_client():
     """Get configured Gemini client with unrestricted safety settings."""
     if GEMINI_API_KEY:
@@ -70,11 +74,71 @@ def get_gemini_client():
     return None
 
 # Tool command mappings
+# Tool command mappings - Comprehensive (55+ Tools)
 TOOL_COMMANDS = {
-    "Network Map (nmap)": "nmap -sV {target}",
-    "Nmap": "nmap -sV {target}",
+    # --- Information Gathering ---
+    "Network Map (nmap)": "nmap -sV -oX - {target}",
+    "Nmap": "nmap -sV -oX - {target}",
+    "Dracnmap": "sudo ./Dracnmap/dracnmap-v2.2.sh {target}",
+    "Port Scanning": "nmap -O -Pn {target}",
+    "Host to IP": "host {target}",
+    "Xerosploit": "sudo xerosploit",
+    "RED HAWK (All In One Scanning)": "cd RED_HAWK && php rhawk.php",
+    "ReconSpider(For All Scanning)": "cd reconspider && python3 reconspider.py",
+    "IsItDown (Check Website Down/Up)": "curl -I {target}",
+    "Infoga - Email OSINT": "cd Infoga && python3 infoga.py --target {target}",
+    "ReconDog": "cd ReconDog && sudo python dog",
+    "Striker": "cd Striker && python3 striker.py {target}",
+    "SecretFinder (like API & etc)": "cd SecretFinder && python3 SecretFinder.py -i {target} -o output.html",
+    "Find Info Using Shodan": "python3 Shodanfy.py {target}",
+    "Port Scanner - rang3r": "cd rang3r && python rang3r.py --ip {target}",
+    "Breacher": "cd Breacher && python3 breacher.py -u {target}",
+
+    # --- SQL Injection ---
     "SQLMap": "sqlmap -u {target} --batch --dbs",
     "sqlmap": "sqlmap -u {target} --batch --dbs",
+    "NoSQLMap": "python NoSQLMap/NoSQLMap.py",
+    "Damn Small SQLi Scanner": "python3 dsss.py -u {target}",
+    "Explo": "./explo/explo -u {target} -w /usr/share/wordlists/dirb/common.txt",
+    "Leviathan": "cd leviathan && python leviathan.py -u {target}",
+
+    # --- Web Attacks ---
+    "Web2Attack": "python3 Web2Attack/w2aconsole.py",
+    "Skipfish": "skipfish -o skipfish_output {target}",
+    "SubDomain Finder": "python3 Sublist3r/sublist3r.py -d {target}",
+    "CheckURL": "python3 CheckURL/checkurl.py --url {target}",
+    "Blazy": "python3 Blazy/blazy.py",
+    "Sub-Domain TakeOver": "python3 subover/subover.py",
+    "Dirb": "dirb {target}",
+
+    # --- XSS Attacks ---
+    "XSS-Strike": "python3 XSStrike/xsstrike.py -u {target}",
+    "XSS-Freak": "python3 XSS-Freak/xss_freak.py",
+    "Xerxes": "gcc Xerxes/xerxes.c -o xerxes && ./xerxes {target} 80",
+
+    # --- DDOS ---
+    "SlowLoris": "python3 slowloris.py {target}",
+    "Asyncrone | Multifunction SYN Flood DDoS Weapon": "python3 a3.py",
+    "UFOnet": "sudo python3 ufonet/ufonet",
+    "GoldenEye": "python3 GoldenEye/goldeneye.py {target}",
+
+    # --- Post Exploitation ---
+    "Vegile - Ghost In The Shell": "cd Vegile && ./Vegile",
+    "Chrome Keylogger": "python3 chrome-keylogger/install.py",
+
+    # --- Wireless Attacks ---
+    "WiFi-Pumpkin": "wifipumpkin3",
+    "Fluxion": "sudo ./fluxion/fluxion.sh",
+    "Wifite": "sudo wifite",
+
+    # --- Wordlist Generator ---
+    "Cupp": "python3 cupp/cupp.py -i",
+    "WordlistCreator": "python3 WordlistCreator/wlc.py",
+
+    # --- Forensics ---
+    "Bulk_extractor": "bulk_extractor -o output {target}",
+
+    # --- Modern Tools (Added externally) ---
     "katana": "katana -u {target} -jc",
     "Katana": "katana -u {target} -jc",
     "gospider": "gospider -s {target} -d 2",
@@ -83,7 +147,7 @@ TOOL_COMMANDS = {
     "Arjun": "arjun -u {target}",
     "ffuf": "ffuf -u {target}/FUZZ -w /usr/share/wordlists/dirb/common.txt",
     "WhatWeb": "whatweb {target}",
-    "nikto": "nikto -h {target}",
+    "nikto": "nikto -h {target} -Format xml -o -",
 }
 
 def load_all_tools():
@@ -193,6 +257,11 @@ def run_scan():
         }), 400
 
     command = injector.get_enriched_command(tool_name, target, command_template)
+
+    # Apply ProxyChains if enabled
+    if PROXY_MODE and "proxychains" not in command:
+        command = f"{PROXY_CMD_PREFIX}{command}"
+
     job_id = str(uuid.uuid4())[:8]
 
     with jobs_lock:
@@ -261,8 +330,18 @@ def execute_agent_step(goal, history, target_str, iteration=0):
     if profile:
         intel_context = json.dumps(profile, indent=2)
 
-    # Available tools context
-    tools_context = "\n".join([f"- {name}: {cmd}" for name, cmd in TOOL_COMMANDS.items()])
+    # Available tools context (Enriched)
+    # We want to give the agent more than just the command string
+    tools_context = """
+- nmap: Network Mapper. Use for port scanning and service detection.
+- nikto: Web Server Scanner. Use for finding web server vulnerabilities.
+- sqlmap: SQL Injection Tool. Use for testing database injection points.
+- whatweb: Web Technology Identifier. Use to fingerprint the target.
+- arjun: HTTP Parameter Discovery. Use to find hidden parameters.
+- ffuf: Fuzz Faster U Fool. Use for directory and file fuzzing.
+- katana: Web Crawler. Use to index the target website.
+- gospider: Fast Web Spider. Use for uncovering subdomains and URLs.
+"""
 
     prompt = f"""You are an autonomous security agent.
 GOAL: {goal}
@@ -288,7 +367,8 @@ If you have achieved the goal or cannot proceed, respond ONLY with JSON:
     try:
         response = client.models.generate_content(
             model=GEMINI_MODEL,
-            contents=prompt
+            contents=prompt,
+            config={'safety_settings': SAFETY_SETTINGS}
         )
         text = response.text.strip().replace('```json', '').replace('```', '')
         action = json.loads(text)
@@ -414,20 +494,50 @@ def generate_report():
         return jsonify({"error": "Gemini API key missing"}), 400
 
     # formatting job history
+    # Retrieve simplified session summary
     session_summary = ""
-    for jid, job in jobs.items():
-        session_summary += f"- Tool: {job.get('tool')} | Target: {job.get('target')} | Status: {job.get('status')}\n"
-        session_summary += f"  Output Snippet: {job.get('output', '')[:300]}...\n\n"
+    target_ids = set()
 
-    prompt = f"""You are a CISO generating a security report.
-Session Summary:
+    # 1. Collect Target IDs from recent jobs
+    for jid, job in jobs.items():
+        if job.get('status') == 'completed':
+            t = job.get('target')
+            # Find TID for this target
+            tid = store.get_or_create_target(t)
+            target_ids.add(tid)
+            session_summary += f"- Tool: {job.get('tool')} | Target: {t}\n"
+
+    # 2. Enrich with High-Fidelity Data from VulnStore
+    full_technical_context = ""
+    for tid in target_ids:
+        target_card = store.get_target(tid)
+        full_technical_context += f"\n--- Target: {target_card['address']} ---\n"
+        full_technical_context += f"Open Ports: {len(target_card['ports'])}\n"
+        for p in target_card['ports']:
+            full_technical_context += f"  - Port {p['port']}/{p['protocol']}: {p['service']} {p['version']}\n"
+
+        full_technical_context += f"Vulnerabilities: {len(target_card['vulns'])}\n"
+        for v in target_card['vulns']:
+            full_technical_context += f"  - [{v['severity'].upper()}] {v['title']}\n    Details: {v['details'][:200]}...\n"
+
+        full_technical_context += f"Technologies: {', '.join([t['name'] + ' ' + t['version'] for t in target_card['technologies']])}\n"
+
+    prompt = f"""You are a Lead Penetration Tester generating a Final Engagement Report.
+SESSION SCOPE:
 {session_summary}
 
-Generate a Professional Security Assessment Report in Markdown.
-Include:
-1. Executive Summary
-2. Key Findings (based on the outputs)
-3. Strategic Recommendations
+TECHNICAL FINDINGS (High Fidelity):
+{full_technical_context}
+
+GENERATE A PROFESSIONAL PENTEST REPORT (Markdown).
+The report must include:
+1. **Executive Summary**: High-level risk assessment for stakeholders.
+2. **Attack Surface Analysis**: Breakdown of open ports and identified technologies (CPEs).
+3. **Critical Findings**: Detailed analysis of top vulnerabilities (use the technical context).
+4. **Exploitation Paths**: Theoretical attack vectors based on the findings (e.g., "The outdated Apache 2.4.49 on port 80 is vulnerable to Path Traversal (CVE-2021-41773)...").
+5. **Remediation Strategy**: Concrete steps to fix the issues.
+
+Format: Clean Markdown with headers, lists, and code blocks for technical details.
 """
     try:
         response = client.models.generate_content(
