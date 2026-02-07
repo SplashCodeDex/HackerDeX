@@ -33,7 +33,7 @@ class AnonymouslySurf(HackingTool):
     def stop(self):
         console.print(Panel(Text(self.TITLE, justify="center"), style=f"bold {P_COLOR}"))
         console.print("Stopping Anonsurf...", style=f"bold {P_COLOR}")
-        os.system("sudo anonsurf stop")
+        self.executor.run_blocking("sudo anonsurf stop")
 
 
 class Multitor(HackingTool):

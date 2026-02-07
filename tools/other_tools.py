@@ -33,9 +33,9 @@ class HatCloud(HackingTool):
     PROJECT_URL = "https://github.com/HatBashBR/HatCloud"
 
     def run(self):
-        site = input("Enter Site >> ")
+        site = Prompt.ask("Enter Site")
         os.chdir("HatCloud")
-        subprocess.run(["sudo", "ruby", "hatcloud.rb", "-b", site])
+        self.executor.run_blocking(f"sudo ruby hatcloud.rb -b {site}")
 
 
 class OtherTools(HackingToolsCollection):

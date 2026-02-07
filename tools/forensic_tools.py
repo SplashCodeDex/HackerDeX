@@ -57,8 +57,8 @@ class BulkExtractor(HackingTool):
     def gui_mode(self):
         console.print(Panel(Text(self.TITLE, justify="center"), style=PURPLE_STYLE))
         console.print("[bold magenta]Cloning repository and attempting to run GUI...[/]")
-        os.system("sudo git clone https://github.com/simsong/bulk_extractor.git")
-        os.system("ls src/ && cd .. && cd java_gui && ./BEViewer")
+        self.executor.run_blocking("sudo git clone https://github.com/simsong/bulk_extractor.git")
+        self.executor.run_blocking("ls src/ && cd .. && cd java_gui && ./BEViewer")
         console.print(
             "[magenta]If you get an error after clone go to /java_gui/src/ and compile the .jar file && run ./BEViewer[/]")
         console.print(
@@ -66,10 +66,10 @@ class BulkExtractor(HackingTool):
 
     def cli_mode(self):
         console.print(Panel(Text(self.TITLE + " - CLI Mode", justify="center"), style=PURPLE_STYLE))
-        os.system("sudo apt install bulk-extractor")
+        self.executor.run_blocking("sudo apt install bulk-extractor")
         console.print("[magenta]Showing bulk_extractor help and options:[/]")
-        os.system("bulk_extractor -h")
-        os.system('echo "bulk_extractor [options] imagefile" | boxes -d headline | lolcat')
+        self.executor.run_blocking("bulk_extractor -h")
+        self.executor.run_blocking('echo "bulk_extractor [options] imagefile" | boxes -d headline | lolcat')
 
 
 class Guymager(HackingTool):

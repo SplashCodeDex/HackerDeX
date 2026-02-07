@@ -32,10 +32,10 @@ class TheFatRat(HackingTool):
         ])
 
     def update(self):
-        os.system("cd TheFatRat && bash update && chmod +x setup.sh && bash setup.sh")
+        self.executor.run_blocking("cd TheFatRat && bash update && chmod +x setup.sh && bash setup.sh")
 
     def troubleshoot(self):
-        os.system("cd TheFatRat && sudo chmod +x chk_tools && ./chk_tools")
+        self.executor.run_blocking("cd TheFatRat && sudo chmod +x chk_tools && ./chk_tools")
 
 
 class Brutal(HackingTool):

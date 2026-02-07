@@ -37,19 +37,8 @@ class ddos(HackingTool):
         proxylist = Prompt.ask("Enter ProxyList >>")
         multiple = Prompt.ask("Enter Multiple >>")
         timer = Prompt.ask("Enter Timer >>")
-        os.system("cd ddos;")
-        subprocess.run(
-            [
-                "sudo",
-                "python3 ddos",
-                method,
-                url,
-                "socks_type5.4.1",
-                threads,
-                proxylist,
-                multiple,
-                timer,
-            ]
+        self.executor.run_blocking(
+            f"cd ddos && sudo python3 ddos {method} {url} socks_type5.4.1 {threads} {proxylist} {multiple} {timer}"
         )
 
 
@@ -64,7 +53,7 @@ class SlowLoris(HackingTool):
     def run(self):
         console.print(Panel(Text(self.TITLE, justify="center"), style=f"bold {P_COLOR}"))
         target_site = Prompt.ask("Enter Target Site:-")
-        subprocess.run(["slowloris", target_site])
+        self.executor.run_blocking(f"slowloris {target_site}")
 
 
 class Asyncrone(HackingTool):
@@ -85,10 +74,7 @@ class Asyncrone(HackingTool):
         source_port = Prompt.ask("Enter Source Port >>")
         target_ip = Prompt.ask("Enter Target IP >>")
         target_port = Prompt.ask("Enter Target port >>")
-        os.system("cd aSYNcrone;")
-        subprocess.run(
-            ["sudo", "./aSYNcrone", source_port, target_ip, target_port, 1000]
-        )
+        self.executor.run_blocking(f"cd aSYNcrone && sudo ./aSYNcrone {source_port} {target_ip} {target_port} 1000")
 
 
 class UFONet(HackingTool):
@@ -121,7 +107,7 @@ class GoldenEye(HackingTool):
 
     def run(self):
         console.print(Panel(Text(self.TITLE, justify="center"), style=f"bold {P_COLOR}"))
-        os.system("cd GoldenEye ;sudo ./goldeneye.py")
+        self.executor.run_blocking("cd GoldenEye && sudo ./goldeneye.py")
         console.print("Go to Directory\n[*] USAGE: ./goldeneye.py <url> [OPTIONS]")
 
 
@@ -141,7 +127,7 @@ class Saphyra(HackingTool):
         console.print(Panel(Text(self.TITLE, justify="center"), style=f"bold {P_COLOR}"))
         url = Prompt.ask("Enter url>>>")
         try:
-            os.system("python saphyra.py " + url)
+            self.executor.run_blocking(f"python saphyra.py {url}")
         except Exception:
             console.print("Enter a valid url.", style="bold red")
 

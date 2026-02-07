@@ -26,12 +26,12 @@ class UpdateTool(HackingTool):
         ], installable=False, runnable=False)
 
     def update_sys(self):
-        os.system("sudo apt update && sudo apt full-upgrade -y")
-        os.system("sudo apt-get install tor openssl curl && sudo apt-get update tor openssl curl")
-        os.system("sudo apt-get install python3-pip")
+        self.executor.run_blocking("sudo apt update && sudo apt full-upgrade -y")
+        self.executor.run_blocking("sudo apt-get install tor openssl curl && sudo apt-get update tor openssl curl")
+        self.executor.run_blocking("sudo apt-get install python3-pip")
 
     def update_ht(self):
-        os.system("sudo chmod +x /etc/;"
+        self.executor.run_blocking("sudo chmod +x /etc/;"
                   "sudo chmod +x /usr/share/doc;"
                   "sudo rm -rf /usr/share/doc/hackingtool/;"
                   "cd /etc/;"
@@ -56,7 +56,7 @@ class UninstallTool(HackingTool):
     def uninstall(self):
         console.print("hackingtool started to uninstall..\n")
         sleep(1)
-        os.system("sudo chmod +x /etc/;"
+        self.executor.run_blocking("sudo chmod +x /etc/;"
                   "sudo chmod +x /usr/share/doc;"
                   "sudo rm -rf /usr/share/doc/hackingtool/;"
                   "cd /etc/;"
