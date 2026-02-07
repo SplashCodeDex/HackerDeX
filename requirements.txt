@@ -6,5 +6,6 @@ google-genai
 lolcat
 requests
 rich
+pydantic
 arjun
 shutil
