@@ -47,8 +47,8 @@
     - [x] Sub-task: Refactor `tools/anonsurf.py`, `tools/ddos.py`, etc. (Iterative updates)
     - [x] Sub-task: Ensure all 55+ tools utilize the new pattern
 
-- [ ] Task: Cleanup Legacy Code
-    - [ ] Sub-task: Remove unused `os.system` calls and legacy execution helpers
-    - [ ] Sub-task: Final integration test pass
+- [x] Task: Cleanup Legacy Code [8275938]
+    - [x] Sub-task: Remove unused `os.system` calls and legacy execution helpers
+    - [x] Sub-task: Final integration test pass
 
 - [ ] Task: Conductor - User Manual Verification 'Full Suite Migration & Cleanup' (Protocol in workflow.md)
