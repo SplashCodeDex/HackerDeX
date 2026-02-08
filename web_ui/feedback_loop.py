@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 from typing import Dict, Any, List
@@ -12,7 +13,7 @@ class FeedbackLoopController:
     def __init__(self, gemini_client, mission_mgr: MissionManager):
         self.client = gemini_client
         self.mission_mgr = mission_mgr
-        self.model = "gemini-2.0-flash-exp"
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
     def process_tool_output(self, tool_name: str, output: str, target: str):
         """
@@ -24,17 +25,17 @@ class FeedbackLoopController:
         # 2. Use Gemini to reason about the findings and potentially update the plan
         prompt = f"""
         You are an Autonomous Red Team Orchestrator.
-        
+
         TOOL: {tool_name}
         TARGET: {target}
         OUTPUT (Snippet):
         {output[:2000]}
-        
+
         TASK:
-        Analyze this output for strategic intelligence. 
+        Analyze this output for strategic intelligence.
         Should we add new tasks to the mission based on what was found?
         (e.g., if a new IP was found, add recon for it).
-        
+
         OUTPUT FORMAT (Strict JSON):
         {{
             "intelligence": "<summary_of_findings>",
@@ -42,7 +43,7 @@ class FeedbackLoopController:
             "reasoning": "<why_these_tasks>"
         }}
         """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
@@ -54,14 +55,14 @@ class FeedbackLoopController:
                 text = text[7:]
             if text.endswith('```'):
                 text = text[:-3]
-            
+
             update = json.loads(text)
-            
+
             # 3. Dynamic Re-Planning: Inject new tasks if identified
             if update.get("new_tasks"):
                 # Heuristic: Add new tasks to a 'Discovery Expansion' phase
                 self._inject_new_tasks(update["new_tasks"], update["intelligence"])
-                
+
             return update
         except Exception as e:
             logging.error(f"Feedback Loop Error: {e}")

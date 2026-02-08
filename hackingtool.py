@@ -7,6 +7,17 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web_ui'))
 
 from platform import system
+import platform
+
+def check_os():
+    if sys.platform != "linux":
+        print("[!] This tool is designed for Linux (Kali/Parrot/Ubuntu/Arch).")
+        print(f"[!] Detected OS: {platform.system()} ({sys.platform})")
+        print("[!] Please run inside WSL2, VirtualBox, or a native Linux environment.")
+        sys.exit(1)
+
+check_os()
+
 from time import sleep
 from typing import List, Tuple
 
@@ -141,7 +152,7 @@ def interact_menu():
                         console.print(f"[yellow]Tool '{name}' has no interactive menu (show_options).[/yellow]")
                 except Exception as e:
                     console.print(Panel(f"[red]Error while opening {name}[/red]\n{e}", border_style="red"))
-                
+
                 if not Confirm.ask("[magenta]Return to main menu?[/magenta]", default=True):
                     console.print(Panel("[bold white on magenta]Exiting...[/bold white on magenta]"))
                     break
@@ -156,10 +167,10 @@ def main():
         # Patch: Bypass Linux check for educational exploration on Windows
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
-        
+
         # Optional: Initialize path if needed (currently inactive in original code, but function exists)
-        # choose_path() 
-        
+        # choose_path()
+
         AllTools().show_info()
         interact_menu()
     except KeyboardInterrupt:

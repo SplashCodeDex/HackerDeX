@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 from typing import List, Dict, Any
@@ -10,27 +11,27 @@ class MissionPlanner:
 
     def __init__(self, gemini_client):
         self.client = gemini_client
-        self.model = "gemini-2.0-flash-exp"
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
     def decompose_goal(self, goal: str, target: str) -> Dict[str, Any]:
         """
         Queries Gemini to create a high-level mission plan.
         """
         toolbox = registry.get_toolbox_summary()
-        
+
         prompt = f"""
         You are a Strategic Red Team Planner.
-        
+
         OBJECTIVE: {goal}
         TARGET: {target}
-        
+
         TOOLBOX (55+ Tools Available):
         {toolbox}
-        
+
         TASK:
         Decompose this objective into a structured mission plan consisting of tactical phases.
         Each phase should have a clear goal and a list of candidate tools to use.
-        
+
         OUTPUT FORMAT (Strict JSON):
         {{
             "mission_name": "<short_name>",
@@ -45,7 +46,7 @@ class MissionPlanner:
             ]
         }}
         """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
@@ -57,7 +58,7 @@ class MissionPlanner:
                 text = text[7:]
             if text.endswith('```'):
                 text = text[:-3]
-            
+
             return json.loads(text)
         except Exception as e:
             logging.error(f"Mission Decomposer Error: {e}")

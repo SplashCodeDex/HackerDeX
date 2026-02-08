@@ -7,6 +7,13 @@ from extensions import socketio
 import logging
 import os
 import sys
+import platform
+
+if sys.platform != "linux":
+    print("[!] This web interface is designed for Linux (Kali/Parrot/Ubuntu/Arch).")
+    print(f"[!] Detected OS: {platform.system()} ({sys.platform})")
+    print("[!] Please run inside WSL2, VirtualBox, or a native Linux environment.")
+    sys.exit(1)
 
 # Add parent directory to path to import hackingtool modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

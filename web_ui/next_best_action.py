@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Any
 from vuln_store import VulnStore
 
@@ -9,7 +10,7 @@ class NextBestActionEngine:
     def __init__(self, gemini_client, store: VulnStore):
         self.client = gemini_client
         self.store = store
-        self.model = "gemini-2.0-flash-exp"
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
     def suggest_next_action(self, target_str: str) -> Dict[str, Any]:
         """
@@ -24,13 +25,13 @@ class NextBestActionEngine:
         summary = f"Target: {profile.get('main_target')}\n"
         summary += f"Open Ports: {[p['port'] for p in profile.get('ports', [])]}\n"
         summary += f"Known Vulns: {[v['title'] for v in profile.get('vulnerabilities', [])]}\n"
-        
+
         prompt = f"""
         You are an autonomous penetration testing agent.
-        
+
         CURRENT INTELLIGENCE:
         {summary}
-        
+
         AVAILABLE TOOLS:
         - nmap (Network Recon)
         - nikto (Web Scanner)
@@ -38,10 +39,10 @@ class NextBestActionEngine:
         - commix (Command Injection)
         - hydra (Brute Force)
         - theHarvester (OSINT)
-        
+
         TASK:
         Decide the single most effective NEXT STEP to advance the engagement.
-        
+
         OUTPUT FORMAT (Strict JSON):
         {{
             "tool": "<tool_name>",
@@ -49,7 +50,7 @@ class NextBestActionEngine:
             "command": "<full command line>"
         }}
         """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,

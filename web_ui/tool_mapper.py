@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 from typing import Dict, Any
@@ -11,7 +12,7 @@ class ToolCapabilityMapper:
 
     def __init__(self, gemini_client):
         self.client = gemini_client
-        self.model = "gemini-2.0-flash-exp"
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
     def get_command(self, tool_name: str, goal: str, target: str) -> Dict[str, Any]:
         """
@@ -28,18 +29,18 @@ class ToolCapabilityMapper:
 
         prompt = f"""
         You are a Red Team Operator.
-        
+
         TOOL: {tool_name}
         TOOL METADATA:
         {tool_info}
-        
+
         TACTICAL GOAL: {goal}
         TARGET: {target}
-        
+
         TASK:
         Generate the most effective and precise command line for this tool to achieve the goal.
         Ensure you use appropriate flags for the target type and goal.
-        
+
         OUTPUT FORMAT (Strict JSON):
         {{
             "command": "<full_shell_command>",
@@ -47,7 +48,7 @@ class ToolCapabilityMapper:
             "category": "<recon|exploit|post-exploit|etc>"
         }}
         """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
@@ -59,7 +60,7 @@ class ToolCapabilityMapper:
                 text = text[7:]
             if text.endswith('```'):
                 text = text[:-3]
-            
+
             return json.loads(text)
         except Exception as e:
             logging.error(f"Tool Mapper Error for {tool_name}: {e}")

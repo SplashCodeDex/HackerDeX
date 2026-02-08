@@ -4,6 +4,7 @@ Uses Gemini's 2M token context window to analyze massive log datasets
 Based on 2026 Security Research - AI-Driven Threat Detection
 """
 
+import os
 import json
 import re
 from typing import Dict, List, Optional
@@ -16,16 +17,16 @@ class GeminiLogAnalyzer:
     Leverages Gemini 2.0's massive context window to correlate logs across
     multiple sources and identify complex attack patterns.
     """
-    
+
     def __init__(self, gemini_client):
         self.client = gemini_client
-        self.model = "gemini-2.0-flash-exp"
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
         self.anomalies = []
-    
+
     def correlate_multi_source_logs(self, log_sources: Dict[str, List[str]]) -> Dict:
         """
         Correlates logs from multiple sources to identify attack chains.
-        
+
         Sources:
         - Kubernetes audit logs
         - Application logs
@@ -38,7 +39,7 @@ class GeminiLogAnalyzer:
         for source_name, logs in log_sources.items():
             combined_logs += f"\n=== {source_name.upper()} LOGS ===\n"
             combined_logs += "\n".join(logs[:1000])
-        
+
         prompt = f"""
 You are an expert security analyst correlating logs across multiple systems to identify attack patterns.
 
@@ -92,19 +93,19 @@ OUTPUT (JSON):
   "recommendations": ["Immediate actions to take"]
 }}
 """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=prompt
             )
-            
+
             result_text = response.text
             if "```json" in result_text:
                 result_text = result_text.split("```json")[1].split("```")[0].strip()
-            
+
             analysis = json.loads(result_text)
-            
+
             # Store anomalies
             for chain in analysis.get("attack_chains", []):
                 self.anomalies.append({
@@ -112,11 +113,11 @@ OUTPUT (JSON):
                     "type": "attack_chain",
                     **chain
                 })
-            
+
             return analysis
         except Exception as e:
             return {"error": str(e)}
-    
+
     def extract_versions_from_errors(self, error_logs: List[str]) -> Dict:
         """
         Extracts library/framework versions from error stack traces
@@ -169,21 +170,21 @@ OUTPUT (JSON):
   "exploitation_priority": ["log4j RCE (CVE-2021-44228)"]
 }}
 """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=prompt
             )
-            
+
             result_text = response.text
             if "```json" in result_text:
                 result_text = result_text.split("```json")[1].split("```")[0].strip()
-            
+
             return json.loads(result_text)
         except Exception as e:
             return {"error": str(e)}
-    
+
     def identify_misconfigurations(self, config_files: Dict[str, str]) -> Dict:
         """
         Compares configurations against security baselines to find gaps.
@@ -191,7 +192,7 @@ OUTPUT (JSON):
         configs_text = ""
         for filename, content in config_files.items():
             configs_text += f"\n=== {filename} ===\n{content}\n"
-        
+
         prompt = f"""
 Analyze these configuration files for security misconfigurations:
 
@@ -248,21 +249,21 @@ OUTPUT (JSON):
   "security_score": 45  # out of 100
 }}
 """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=prompt
             )
-            
+
             result_text = response.text
             if "```json" in result_text:
                 result_text = result_text.split("```json")[1].split("```")[0].strip()
-            
+
             return json.loads(result_text)
         except Exception as e:
             return {"error": str(e)}
-    
+
     def predict_exploitation_path(self, reconnaissance_data: Dict) -> Dict:
         """
         Uses AI to predict the most likely attack path based on recon findings.
@@ -314,17 +315,17 @@ OUTPUT (JSON):
   "detection_risk": "medium"
 }}
 """
-        
+
         try:
             response = self.client.models.generate_content(
                 model=self.model,
                 contents=prompt
             )
-            
+
             result_text = response.text
             if "```json" in result_text:
                 result_text = result_text.split("```json")[1].split("```")[0].strip()
-            
+
             return json.loads(result_text)
         except Exception as e:
             return {"error": str(e)}
@@ -333,10 +334,10 @@ OUTPUT (JSON):
 # Example usage
 if __name__ == "__main__":
     from gemini_config import get_gemini_client
-    
+
     client = get_gemini_client()
     analyzer = GeminiLogAnalyzer(client)
-    
+
     # Example: Correlate logs
     logs = {
         "waf": [
@@ -351,6 +352,6 @@ if __name__ == "__main__":
             "[2026-02-07 10:31:30] Outbound connection to 203.0.113.50:443 (5MB transferred)"
         ]
     }
-    
+
     results = analyzer.correlate_multi_source_logs(logs)
     print(json.dumps(results, indent=2))
