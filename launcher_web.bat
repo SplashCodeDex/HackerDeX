@@ -1,33 +1,36 @@
 @echo off
-echo ==================================================
-echo      HACKERDEX WEB UI LAUNCHER
-echo ==================================================
-echo.
-
-REM Check for Gemini API Key
-if "%GEMINI_API_KEY%"=="" (
-    echo [!] WARNING: GEMINI_API_KEY not set.
-    echo     AI Analysis will be disabled.
-    echo     To enable, run: set GEMINI_API_KEY=your_key_here
+if not exist ".env" (
+    echo [!] WARNING: .env file not found. AI features may not work.
+    echo     Please create one from .env.example
     echo.
 )
 
-echo [1] Launching HackingTool Web Interface...
+echo ==================================================
+echo      HACKERDEX WEB UI LAUNCHER (DOCKER)
+echo ==================================================
+echo.
+echo [1] Launching Web Interface...
 echo     URL: http://localhost:8080
 echo.
 
-set ENV_CMD=
-if exist .env (
-    set ENV_CMD=--env-file .env
-)
+REM Check if gemini keys are set in current shell, otherwise let docker read .env
+set ENV_ARGS=
+if exist .env set ENV_ARGS=--env-file .env
 
 docker run -it --rm ^
   -p 8080:8080 ^
-  %ENV_CMD% ^
-  -e GEMINI_API_KEY=%GEMINI_API_KEY% ^
-  --entrypoint python3 ^
   -v "%CD%":/root/hackingtool ^
+  %ENV_ARGS% ^
+  -e GEMINI_API_KEYS=%GEMINI_API_KEYS% ^
+  -e GEMINI_MODEL=%GEMINI_MODEL% ^
+  --privileged ^
+  --entrypoint python3 ^
   hackingtool ^
   web_ui/app.py
 
-pause
+if %errorlevel% neq 0 (
+    echo.
+    echo [!] Launcher failed. Did you build first?
+    echo     Run 'build.bat' to create the image.
+    pause
+)

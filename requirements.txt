@@ -1,12 +1,15 @@
 boxes
 flask
 flask-socketio
-eventlet
+gevent
+gevent-websocket
 google-genai
 lolcat
 requests
 rich
 pydantic
 arjun
-shutil
 python-dotenv
+pytest
+volatility3
+schedule

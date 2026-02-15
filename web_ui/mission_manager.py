@@ -1,6 +1,6 @@
 import logging
 from typing import List, Dict, Any, Set
-from .mission_planner import MissionPlanner
+from mission_planner import MissionPlanner
 
 class MissionManager:
     """
@@ -34,12 +34,12 @@ class MissionManager:
         """
         if not self.current_mission:
             return True
-            
+
         all_tasks = set()
         for phase in self.active_phases:
             for task in phase.get("tasks", []):
                 all_tasks.add(task)
-        
+
         return all_tasks.issubset(self.completed_tasks)
 
     def get_next_tasks(self) -> List[str]:

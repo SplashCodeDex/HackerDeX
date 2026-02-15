@@ -1,6 +1,6 @@
-# Eventlet monkey patching MUST be first for thread-safe SocketIO
-import eventlet
-eventlet.monkey_patch()
+# Gevent monkey patching MUST be first for thread-safe SocketIO
+from gevent import monkey
+monkey.patch_all()
 
 from flask import Flask, render_template
 from extensions import socketio
@@ -21,9 +21,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import shared managers (ensure they are initialized)
 import managers
 
-# Start CVE auto-updater
+# The auto_updater will be started in the main block
 from cve_auto_updater import auto_updater
-print("[*] CVE auto-updater started (updates every 6 hours)")
 
 # Import Blueprints
 from blueprints.scans import scans_bp
@@ -57,4 +56,9 @@ def handle_connect():
     logging.info('Client connected via WebSocket')
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=8080, debug=True)
+    # Start CVE auto-updater in background
+    print("[*] Starting CVE auto-updater...")
+    socketio.start_background_task(auto_updater.start)
+
+    print("[*] HackerDeX Web UI starting at http://0.0.0.0:8080")
+    socketio.run(app, host='0.0.0.0', port=8080, debug=False)

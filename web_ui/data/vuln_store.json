@@ -64,15 +64,77 @@
             "priority_level": "low",
             "scan_history": [],
             "last_seen": "2026-02-07T14:53:28.487537"
+        },
+        "421aa90e079f": {
+            "id": "421aa90e079f",
+            "main_target": "localhost",
+            "aliases": [
+                "localhost"
+            ],
+            "ports": [],
+            "vulnerabilities": [],
+            "urls": [],
+            "technologies": [],
+            "os_info": {},
+            "dns_info": {},
+            "osint_info": {},
+            "risk_score": 0.0,
+            "priority_level": "low",
+            "scan_history": [],
+            "last_seen": "2026-02-13T02:09:10.869577"
+        },
+        "f528764d624d": {
+            "id": "f528764d624d",
+            "main_target": "127.0.0.1",
+            "aliases": [
+                "127.0.0.1"
+            ],
+            "ports": [
+                {
+                    "port": 8000,
+                    "protocol": "tcp",
+                    "service": "http",
+                    "version": "SimpleHTTPServer 0.6 Python 3.13.11",
+                    "last_seen": "2026-02-13T07:23:01.659282"
+                },
+                {
+                    "port": 8080,
+                    "protocol": "tcp",
+                    "service": "http",
+                    "version": "Ajenti http control panel",
+                    "last_seen": "2026-02-13T07:23:01.672895"
+                }
+            ],
+            "vulnerabilities": [],
+            "urls": [],
+            "technologies": [
+                {
+                    "name": "SimpleHTTPServer",
+                    "version": "0.6"
+                },
+                {
+                    "name": "Ajenti http control panel",
+                    "version": ""
+                }
+            ],
+            "os_info": {},
+            "dns_info": {},
+            "osint_info": {},
+            "risk_score": 0.0,
+            "priority_level": "low",
+            "scan_history": [],
+            "last_seen": "2026-02-13T02:09:12.619049"
         }
     },
     "alias_index": {
         "target-a.com": "22c01b133bc4",
-        "target-b.com": "c4c13b74cd82"
+        "target-b.com": "c4c13b74cd82",
+        "localhost": "421aa90e079f",
+        "127.0.0.1": "f528764d624d"
     },
     "metadata": {
         "created_at": "2026-02-07T09:09:27.939166",
-        "last_modified": "2026-02-07T14:53:28.487584",
-        "total_findings": 2
+        "last_modified": "2026-02-13T07:23:01.706923",
+        "total_findings": 4
     }
 }

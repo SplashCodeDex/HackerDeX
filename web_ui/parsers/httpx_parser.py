@@ -1,6 +1,6 @@
 import json
 import logging
-from .base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 logger = logging.getLogger(__name__)
 

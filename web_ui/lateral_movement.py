@@ -1,7 +1,7 @@
 import re
 import logging
 from typing import List, Dict, Any
-from .vuln_store import VulnStore
+from vuln_store import VulnStore
 
 class LateralMovementEngine:
     """
@@ -34,7 +34,7 @@ class LateralMovementEngine:
                             "credential": cred,
                             "reasoning": f"Testing harvested credential '{cred}' against {service} on {target['main_target']}"
                         })
-        
+
         return potential_moves
 
     def _harvest_all_credentials(self) -> List[str]:
@@ -43,7 +43,7 @@ class LateralMovementEngine:
         """
         creds = set()
         password_pattern = re.compile(r'pass(?:word)?:?\s*([^\s,]+)', re.IGNORECASE)
-        
+
         for target in self.store.targets.values():
             # Check vulnerability details
             for vuln in target.get('vulnerabilities', []):
@@ -51,7 +51,7 @@ class LateralMovementEngine:
                 matches = password_pattern.findall(details)
                 for m in matches:
                     creds.add(m)
-            
+
             # Check OSINT (emails can be usernames)
             osint = target.get('osint_info', {})
             for email in osint.get('emails', []):

@@ -32,13 +32,11 @@ jobs = {}
 jobs_lock = Lock()
 
 # Gemini Configuration
-from gemini_config import get_gemini_client, GEMINI_MODEL, SAFETY_SETTINGS, GEMINI_API_KEY
-    if GEMINI_API_KEY:
-        try:
-            return genai.Client(api_key=GEMINI_API_KEY)
-        except Exception:
-            return None
-    return None
+from gemini_config import get_resilient_gemini_client, GEMINI_MODEL, SAFETY_SETTINGS
+
+def get_gemini_client():
+    """Returns the resilient Gemini client for use across the application."""
+    return get_resilient_gemini_client()
 
 def load_all_tools():
     """Introspects the all_tools list from hackingtool.py"""

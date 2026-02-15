@@ -1,19 +1,19 @@
-from .nmap_parser import NmapParser
-from .sqlmap_parser import SqlmapParser
-from .nikto_parser import NiktoParser
-from .metasploit_parser import MetasploitParser
-from .theharvester_parser import TheHarvesterParser
-from .amass_parser import AmassParser
-from .ffuf_parser import FFUFParser
-from .semgrep_parser import SemgrepParser
-from .naabu_parser import NaabuParser
-from .httpx_parser import HttpxParser
-from .gobuster_parser import GobusterParser
-from .hydra_parser import HydraParser
-from .nuclei_parser import NucleiParser
-from .wpscan_parser import WPScanParser
-from .burp_parser import BurpSuiteParser
-from .generic_parser import GenericParser
+from parsers.nmap_parser import NmapParser
+from parsers.sqlmap_parser import SqlmapParser
+from parsers.nikto_parser import NiktoParser
+from parsers.metasploit_parser import MetasploitParser
+from parsers.theharvester_parser import TheHarvesterParser
+from parsers.amass_parser import AmassParser
+from parsers.ffuf_parser import FFUFParser
+from parsers.semgrep_parser import SemgrepParser
+from parsers.naabu_parser import NaabuParser
+from parsers.httpx_parser import HttpxParser
+from parsers.gobuster_parser import GobusterParser
+from parsers.hydra_parser import HydraParser
+from parsers.nuclei_parser import NucleiParser
+from parsers.wpscan_parser import WPScanParser
+from parsers.burp_parser import BurpSuiteParser
+from parsers.generic_parser import GenericParser
 from models import ScanResultModel, PortModel, VulnerabilityModel, TechnologyModel
 
 class ParserRegistry:

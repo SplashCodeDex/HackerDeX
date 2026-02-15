@@ -29,6 +29,9 @@ class AgentManager:
     """
     def __init__(self):
         self.gemini = get_gemini_client()
+        if not self.gemini:
+             logging.warning("[AgentManager] Initialized without Gemini client (no keys found)")
+
         self.mission_mgr = MissionManager(self.gemini)
         self.context_mgr = AgentContext(vuln_store)
         self.mapper = ToolCapabilityMapper(self.gemini)
@@ -54,13 +57,13 @@ class AgentManager:
         # 1. Mission Planning
         update_callback({'message': '🧠 Decomposing objective into tactical phases...'})
         self.mission_mgr.start_mission(goal, target)
-        
+
         iteration = 0
-        max_iterations = 50 
+        max_iterations = 50
 
         while self.is_running and not self.mission_mgr.is_mission_complete() and iteration < max_iterations:
             iteration += 1
-            
+
             # 2. Get Next Tasks
             pending_tasks = self.mission_mgr.get_next_tasks()
             if not pending_tasks:
@@ -73,14 +76,14 @@ class AgentManager:
 
                 # 3. Context Injection
                 technical_context = self.context_mgr.get_mission_context(target)
-                
+
                 # 4. Command Synthesis
                 update_callback({'message': f'💭 Synthesizing optimal command for {task_tool}...'})
                 mapping = self.mapper.get_command(task_tool, goal, target)
                 cmd = mapping.get('command')
                 rationale = mapping.get('rationale', 'No rationale provided.')
                 category = mapping.get('category', 'recon')
-                
+
                 if not cmd:
                     update_callback({'message': f'⚠️ Skip: {mapping.get("error", "Unknown error")}'})
                     self.mission_mgr.mark_task_complete(task_tool, "skipped")
@@ -101,7 +104,7 @@ class AgentManager:
                     update_callback({'message': f'🛡️ Safety Gate: Awaiting approval for **{category}** command...'})
                     # In a real app, we'd pause here and wait for a websocket event
                     # For this implementation, we'll simulate approval or proceed if configured
-                    pass 
+                    pass
 
                 # 7. Execution
                 update_callback({'message': f'⚡ Executing: `{cmd}`'})

@@ -90,7 +90,21 @@ def system_update_and_install(choice):
             console.print(f"[red][!][/red] apt update/upgrade failed (non-fatal). Continuing installation. Error: {e}")
         console.print("[yellow]* Installing required packages (apt)...[/yellow]")
         try:
-            run_cmd("apt-get install -y git python3-pip python3-venv figlet boxes php curl xdotool wget")
+            # Core dependencies + Essential Hacking Tools
+            packages = [
+                "git", "python3-pip", "python3-venv", "figlet", "boxes", "php", "curl", "xdotool", "wget",
+                # Network & Web
+                "nmap", "sqlmap", "nikto", "net-tools", "dnsutils", "whois",
+                # Exploitation
+                "metasploit-framework", "hydra", "john",
+                # Wireless
+                "aircrack-ng", "wifite",
+                # Sniffing & Spoofing
+                "wireshark", "dsniff", "ettercap-text-only",
+                # Forensics & Encryption
+                "fcrackzip"
+            ]
+            run_cmd(f"apt-get install -y {' '.join(packages)}")
         except subprocess.CalledProcessError as e:
             console.print(f"[red][!][/red] apt-get install failed (non-fatal). You may need to install some packages manually. Error: {e}")
     elif choice == 2:

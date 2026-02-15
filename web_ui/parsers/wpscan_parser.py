@@ -1,13 +1,13 @@
 import re
 import json
-from .base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 class WPScanParser(BaseParser):
     """Parser for WPScan WordPress vulnerability scanner."""
-    
+
     def can_parse(self, tool_name: str) -> bool:
         return tool_name.lower() in ['wpscan', 'wp-scan', 'wordpress-scanner']
-    
+
     def parse(self, raw_output: str, tool_name: str, target: str) -> dict:
         findings = {
             "ports": [],
@@ -17,11 +17,11 @@ class WPScanParser(BaseParser):
             "os_info": {},
             "wordpress_info": {}
         }
-        
+
         # WordPress version detection
         version_pattern = r'WordPress version (\d+\.\d+(?:\.\d+)?)'
         version_match = re.search(version_pattern, raw_output, re.IGNORECASE)
-        
+
         if version_match:
             wp_version = version_match.group(1)
             findings["technologies"].append({
@@ -29,7 +29,7 @@ class WPScanParser(BaseParser):
                 "version": wp_version
             })
             findings["wordpress_info"]["version"] = wp_version
-            
+
             # Check if version is outdated (simple check for versions < 6.0)
             try:
                 major_version = float(wp_version.split('.')[0] + '.' + wp_version.split('.')[1])
@@ -43,11 +43,11 @@ class WPScanParser(BaseParser):
                     })
             except:
                 pass
-        
+
         # Theme detection
         theme_pattern = r'WordPress theme in use: ([^\n]+)'
         theme_match = re.search(theme_pattern, raw_output, re.IGNORECASE)
-        
+
         if theme_match:
             theme_name = theme_match.group(1).strip()
             findings["wordpress_info"]["theme"] = theme_name
@@ -55,20 +55,20 @@ class WPScanParser(BaseParser):
                 "name": f"WordPress Theme: {theme_name}",
                 "version": "detected"
             })
-        
+
         # Plugin detection with vulnerabilities
         plugin_pattern = r'\[!\]\s+([^\n]+?)\s+(\d+\.\d+(?:\.\d+)?)?'
         plugin_matches = re.finditer(plugin_pattern, raw_output, re.MULTILINE)
-        
+
         plugins_found = []
-        
+
         for match in plugin_matches:
             plugin_info = match.group(1).strip()
-            
+
             # Check if it's a plugin line
             if 'plugin' in plugin_info.lower() or '/' in plugin_info:
                 plugins_found.append(plugin_info)
-        
+
         # Vulnerability detection
         vuln_patterns = [
             (r'CVE-(\d{4}-\d+)', 'CVE'),
@@ -76,26 +76,26 @@ class WPScanParser(BaseParser):
             (r'Title:\s*([^\n]+)', 'vulnerability title'),
             (r'References?:\s*([^\n]+)', 'reference')
         ]
-        
+
         detected_vulns = {}
         current_vuln = {}
-        
+
         lines = raw_output.split('\n')
         for i, line in enumerate(lines):
             # CVE detection
             cve_match = re.search(r'CVE-(\d{4}-\d+)', line, re.IGNORECASE)
             if cve_match:
                 cve_id = f"CVE-{cve_match.group(1)}"
-                
+
                 # Try to find severity and title in surrounding lines
                 context = '\n'.join(lines[max(0, i-3):min(len(lines), i+4)])
-                
+
                 title = "WordPress Vulnerability"
                 if 'Title:' in context:
                     title_match = re.search(r'Title:\s*([^\n]+)', context)
                     if title_match:
                         title = title_match.group(1).strip()
-                
+
                 # Determine severity
                 severity = 'medium'
                 if any(keyword in context.lower() for keyword in ['critical', 'rce', 'remote code execution']):
@@ -104,7 +104,7 @@ class WPScanParser(BaseParser):
                     severity = 'high'
                 elif any(keyword in context.lower() for keyword in ['xss', 'csrf', 'lfi']):
                     severity = 'medium'
-                
+
                 findings["vulns"].append({
                     "title": f"{title} ({cve_id})",
                     "severity": severity,
@@ -112,13 +112,13 @@ class WPScanParser(BaseParser):
                     "url": target,
                     "cve": cve_id
                 })
-        
+
         # User enumeration
         user_pattern = r'Found By: Author Id Brute Forcing.*?([^\n]+)'
         user_matches = re.finditer(user_pattern, raw_output, re.IGNORECASE | re.DOTALL)
-        
+
         users_found = []
-        
+
         # Alternative user pattern
         username_pattern = r'\[\+\]\s+(\w+)'
         for match in re.finditer(username_pattern, raw_output):
@@ -127,7 +127,7 @@ class WPScanParser(BaseParser):
                 # Check if it looks like a username (not a common word)
                 if potential_user.lower() not in ['wordpress', 'version', 'theme', 'plugin', 'scanning']:
                     users_found.append(potential_user)
-        
+
         if users_found:
             findings["wordpress_info"]["users"] = users_found
             findings["vulns"].append({
@@ -137,17 +137,17 @@ class WPScanParser(BaseParser):
                 "url": target,
                 "usernames": users_found
             })
-        
+
         # Upload directory detection
         if 'wp-content/uploads' in raw_output.lower():
             upload_accessible = False
-            
+
             # Check if accessible
             if '200' in raw_output or 'directory listing' in raw_output.lower():
                 upload_accessible = True
-            
+
             findings["urls"].append(f"{target}/wp-content/uploads/")
-            
+
             if upload_accessible:
                 findings["vulns"].append({
                     "title": "WordPress Upload Directory Accessible",
@@ -156,11 +156,11 @@ class WPScanParser(BaseParser):
                     "url": f"{target}/wp-content/uploads/",
                     "exploit": "Test for arbitrary file upload vulnerabilities"
                 })
-        
+
         # XML-RPC detection
         if 'xmlrpc.php' in raw_output.lower():
             xmlrpc_enabled = 'enabled' in raw_output.lower() or '200' in raw_output
-            
+
             if xmlrpc_enabled:
                 findings["vulns"].append({
                     "title": "WordPress XML-RPC Enabled",
@@ -169,12 +169,12 @@ class WPScanParser(BaseParser):
                     "url": f"{target}/xmlrpc.php",
                     "exploit": "Use for credential brute-forcing or DDoS amplification"
                 })
-        
+
         # Interesting findings
         interesting_pattern = r'\[!\] ([^\n]+)'
         for match in re.finditer(interesting_pattern, raw_output):
             finding = match.group(1).strip()
-            
+
             # Avoid duplicates
             if finding and len(finding) > 10:
                 # Check if it's a new finding
@@ -183,8 +183,8 @@ class WPScanParser(BaseParser):
                     if finding in existing_vuln.get("details", ""):
                         is_new = False
                         break
-                
-                if is_new and any(keyword in finding.lower() for keyword in 
+
+                if is_new and any(keyword in finding.lower() for keyword in
                                   ['vulnerable', 'outdated', 'exposed', 'accessible', 'found']):
                     findings["vulns"].append({
                         "title": "WordPress Security Finding",
@@ -192,7 +192,7 @@ class WPScanParser(BaseParser):
                         "details": finding,
                         "url": target
                     })
-        
+
         # Plugin vulnerability summary
         if plugins_found:
             findings["wordpress_info"]["plugins"] = plugins_found
@@ -200,12 +200,12 @@ class WPScanParser(BaseParser):
                 "name": "WordPress Plugins Detected",
                 "version": f"{len(plugins_found)} plugins found"
             })
-        
+
         # WAF detection
         if 'firewall' in raw_output.lower() or 'waf' in raw_output.lower():
             findings["technologies"].append({
                 "name": "Web Application Firewall (WAF)",
                 "version": "detected"
             })
-        
+
         return findings

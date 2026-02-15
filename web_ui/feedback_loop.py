@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from typing import Dict, Any, List
-from .mission_manager import MissionManager
+from mission_manager import MissionManager
 
 class FeedbackLoopController:
     """

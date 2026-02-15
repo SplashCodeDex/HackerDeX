@@ -1,5 +1,5 @@
 import re
-from .base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 class TheHarvesterParser(BaseParser):
     """Parser for theHarvester OSINT tool output."""

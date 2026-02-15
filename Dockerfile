@@ -16,9 +16,25 @@ RUN --mount=type=cache,target=/var/cache/apt \
     xdotool \
     wget \
     nmap \
+    sqlmap \
+    nikto \
+    metasploit-framework \
+    hydra \
+    john \
+    aircrack-ng \
+    wifite \
+    wireshark \
+    dsniff \
+    ettercap-text-only \
+    fcrackzip \
+    net-tools \
+    dnsutils \
+    whois \
     proxychains4 \
     tor \
     ssh \
+    build-essential \
+    libpcap-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Go environment

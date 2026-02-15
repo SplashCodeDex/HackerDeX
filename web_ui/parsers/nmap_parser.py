@@ -1,5 +1,5 @@
 import re
-from .base_parser import BaseParser
+from parsers.base_parser import BaseParser
 
 class NmapParser(BaseParser):
     def can_parse(self, tool_name: str) -> bool:
